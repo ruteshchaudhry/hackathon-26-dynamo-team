@@ -1,0 +1,42 @@
+{
+  "requests": [
+    {
+      "id": "staging",
+      "method": "POST",
+      "url": "/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/d2285f11-09dc-462b-b692-e3111a40c23f/permissions",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "grantedToV2": {
+          "application": {
+            "id": "1da20b9d-2397-4a82-bfc8-9c3549f30cd3",
+            "displayName": "Customer Capture"
+          }
+        },
+        "roles": [
+          "write"
+        ]
+      }
+    },
+    {
+      "id": "approved",
+      "method": "POST",
+      "url": "/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/85fc11a7-c916-4af3-b25e-1b7346aba98a/permissions",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "grantedToV2": {
+          "application": {
+            "id": "1da20b9d-2397-4a82-bfc8-9c3549f30cd3",
+            "displayName": "Customer Capture"
+          }
+        },
+        "roles": [
+          "write"
+        ]
+      }
+    }
+  ]
+}

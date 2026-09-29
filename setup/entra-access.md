@@ -23,7 +23,7 @@
 
 The current Azure CLI Graph session can manage Entra applications but lacks SharePoint management scopes. Both grant calls returned 403 Access denied. A requested CLI sign-in with Sites.ReadWrite.All was rejected by Microsoft with AADSTS65002 (the Microsoft-owned CLI application is not preauthorised for this scope). It did not grant the requested scope.
 
-Use an authorised Microsoft Graph setup client, such as Graph Explorer, with delegated `Sites.ReadWrite.All` and an account allowed to manage permissions on these lists. This is the setup tool's permission, not Customer Capture's. The user completed Graph Explorer sign-in. Its permission panel showed existing consent for Sites.FullControl.All and Sites.Manage.All, so no new Graph Explorer consent was added by this task. A batch containing the two exact list grants is prepared in Graph Explorer and awaits the user’s Run query action. Do not broaden Customer Capture to site-wide permissions.
+Use an authorised Microsoft Graph setup client, such as Graph Explorer, with delegated `Sites.ReadWrite.All` and an account allowed to manage permissions on these lists. This is the setup tool's permission, not Customer Capture's. The user completed Graph Explorer sign-in and personally consented to Sites.ReadWrite.All (Principal: this user only). Its permission panel also showed pre-existing organisation consent for Sites.FullControl.All and Sites.Manage.All. Both list grant requests still returned 403 Access denied after the new consent. No Customer Capture list grant has been confirmed. A SharePoint site owner/administrator must apply the requests below or investigate the account’s effective permission and tenant restrictions. Do not broaden Customer Capture to site-wide permissions.
 
 Run these two **POST** requests separately using Microsoft Graph v1.0:
 
@@ -46,6 +46,8 @@ Use the same request body for both (also saved as [sharepoint-app-grant.json](sh
   "roles": ["write"]
 }
 ```
+
+The most recent failed batch was at 2026-09-29 21:17:01 UTC, request ID `0d228fb0-4c80-4d7b-9160-f75b5753029e`; both inner responses were 403. An outer batch HTTP 200 is not grant success. The request is also available as [a two-request batch](sharepoint-app-grants-batch.json), submitted with POST to `https://graph.microsoft.com/v1.0/$batch`.
 
 Before repeating a request, GET its permissions collection and check whether this app already has a write grant. After creation, GET again to confirm the grant and preserve the existing groups/users. Selected-list grants break inheritance on those lists. Pre-grant inspection found five existing user/group entries per list; no entries have been changed by the failed grant calls.
 
