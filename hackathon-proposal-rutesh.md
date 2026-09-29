@@ -15,14 +15,14 @@ Until inbox access is available, use a manually triggered Power Automate flow wi
 ## 2. Agreed user journey
 
 1. An authorised pilot user signs into the static web app using organisational Microsoft SSO.
-2. The user sees pending suggestions and can choose **Scan now** for the one configured demo inbox.
+2. The user sees pending suggestions and can choose **Refresh records** after the sample-email scan is run in Power Automate.
 3. Power Automate reads a bounded batch of sample emails, captures sender and recipients, and extracts explicit property references and relationship labels.
 4. The flow first matches the normalised sender email against live Dynamics `Contact.emailaddress1`. For missing senders, use AI Builder entity extraction for name suggestions and check pending/approved SharePoint records before staging to avoid duplicates. Property/development/premises details remain reviewable.
 5. Only senders with no exact email match become records in **ContactStaging** for review. If `Contact.emailaddress1` matches the sender, finish without staging or creating a relationship. A failed lookup stops processing; it is not a missing contact.
-6. The user reviews and corrects email, names, target property/development/premises, and relationship, then approves selected records. Uncertain or incomplete entries remain pending.
-7. Power Automate rechecks live Dynamics and the approved demo records. Required simulated additions are saved in **AddedContacts**; nothing is written to Dynamics.
-8. The staging entry is removed only after its durable outcome has been recorded. Failed entries remain available for retry. The UI displays **Added to demo contacts** for simulated additions and **Already exists** when the recheck finds no work left.
-9. The user can open **Added contacts** to see approved demo outcomes.
+6. The user reviews and corrects email, names, target property/development/premises, and relationship, then approves selected records. Email is required. Names and property/relationship descriptions may remain blank in this contact-only demo; later Dynamics import requires validated fields and IDs.
+7. The static app saves the corrected values directly to **AddedContacts** through delegated Microsoft Graph calls. It checks existing approved records and uses unique keys. No second approval flow or approval-time Dynamics lookup is needed for the demo.
+8. The staging entry is removed only after its durable outcome has been recorded. Failed entries remain available for retry. The UI shows a saved contact or a cleanup retry. A duplicate from another suggestion remains staged for investigation.
+9. The user can open **Added contacts** to see corrected approved records and the **Approved contacts created** total. This list can feed a later Dynamics import; that import is not enabled in the demo.
 
 ## 3. Data and responsibilities
 
@@ -30,14 +30,14 @@ Until inbox access is available, use a manually triggered Power Automate flow wi
 |---|---|
 | Outlook | Source emails from one team-configured inbox |
 | Dynamics / Dataverse | Live, read-only source of existing contacts, relationships, properties/developments, and premises |
-| Power Automate | Inbox reading, parsing, live comparison, staging, validated approvals, duplicate checks, and cleanup |
+| Power Automate | Inbox reading, parsing, live comparison, staging and scan duplicate checks |
 | SharePoint ContactStaging | Pending review and failed processing records |
-| SharePoint AddedContacts | Approved demo contact/relationship outcomes and durable duplicate detection |
-| Static web app | SSO, pending review, edit and approve, scan control, results, and added contacts |
+| SharePoint AddedContacts | Approved demo contacts and durable duplicate detection |
+| Static web app | SSO, shared list reads, correction, direct SharePoint approval/cleanup, refresh, results and count |
 
 The PM-facing fields are email, first name, last name, property/development/premises, and relationship to the property. Keep the actual Dynamics IDs alongside display labels. Supporting fields retain mailbox, source message ID, recipients, time, a short supporting excerpt, reviewer, processing status, and errors.
 
-Do not invent missing names or roles. The initial flow is contact discovery by email, not relationship-gap discovery. Multiple exact email matches also exit without creating anything. A missing sender is staged once per normalised email; the PM resolves property/role details before approval.
+Do not invent missing names or roles. The initial flow is contact discovery by email, not relationship-gap discovery. Multiple exact email matches also exit without creating anything. A missing sender is staged once per normalised email; the PM can correct names and property/role descriptions; unresolved references must be validated before later Dynamics import.
 
 Use two SharePoint Lists as the agreed storage. Do not implement CSV or Excel databases.
 
@@ -45,7 +45,7 @@ Use two SharePoint Lists as the agreed storage. Do not implement CSV or Excel da
 
 Use one configured Outlook inbox, synthetic sample emails, and existing sample data in the Dynamics development environment. Use AI Builder Extract standard entities for name evidence, with PM review. Standard entity extraction is not a custom GPT prompt and does not establish whether a contact exists. First/last-name candidate lookups are advisory only; exact sender-email matching decides whether to exit. The current two-token name split is a review suggestion; leave unsupported names blank and retain the source evidence.
 
-Build only login, pending review, editing, approval, Scan now, and added demo contacts. Exclude admin dashboards, invitations, reminders, self-service mailbox onboarding, the former Process 1/2/3 screens, rejection workflows, and daily/weekly digests. Scheduled scanning and organisation-wide rollout are outside this demo scope.
+Build only login, pending review, editing, approval, Refresh records, and added demo contacts. Exclude admin dashboards, invitations, reminders, self-service mailbox onboarding, the former Process 1/2/3 screens, rejection workflows, and daily/weekly digests. Scheduled scanning and organisation-wide rollout are outside this demo scope.
 
 The general data model still permits multiple inboxes per property and multiple properties per inbox or contact.
 
@@ -58,15 +58,15 @@ The general data model still permits multiple inboxes per property and multiple 
 - [ ] Missing or ambiguous information can be corrected before approval.
 - [ ] Repeated scans, approval clicks, and retries do not duplicate pending or approved records.
 - [ ] A failed save preserves staging; a cleanup failure does not repeat the successful addition.
-- [ ] A record added independently to Dynamics between scan and approval is recognised and reported accurately.
+- [ ] Demo approval makes no Dynamics calls; the later Dynamics import must recheck for records created since scanning.
 - [ ] Unauthorised users cannot read review data or trigger actions.
 - [ ] Dynamics data and schemas remain unchanged.
 
 ## 6. Delivery and remaining inputs
 
-Rutesh builds HTML, CSS, and vanilla JavaScript with organisational SSO. Serve the frontend locally using Python's static file server; use Azure Static Web Apps Free if hosting is available. The Python server serves files only; cloud flows perform processing.
+Rutesh builds HTML, CSS, and vanilla JavaScript with organisational SSO. Serve the frontend locally using Python's static file server; use Azure Static Web Apps Free if hosting is available. The Python server serves files only; the cloud scan performs ingestion and the browser uses Graph for review and approval.
 
-The team must supply the demo inbox/folder, Dynamics read-only mapping and connection, SharePoint site/list IDs and fields, approved pilot users, Entra configuration, and a verified authenticated web-app-to-flow contract. Validate browser access and required platform entitlements before the live integration demo.
+The team must supply the demo inbox/folder, Dynamics read-only mapping and connection, SharePoint site/list IDs and fields, approved pilot users, Entra configuration, and delegated selected-list read/write access. A browser scan trigger is deferred; the current scan runs in the designer. Validate browser access and required platform entitlements before the live integration demo.
 
 Implementation tasks are split into [frontend and integration](static-web-app-integration-workstream.md), [Power Automate](power-automate-workstream.md), [SharePoint](sharepoint-workstream.md), and [Dynamics read-only access](dataverse-workstream.md).
 

@@ -30,14 +30,9 @@ The Bicep template contains one Free Static Web App. Use **Incremental** mode wi
 az deployment group create --subscription 36a7b914-f275-4782-a9ea-bda7362ff589 --resource-group rg-portalapp-dev-uks --name customer-capture-20e0 --template-file infra/main.bicep --parameters @infra/main.parameters.json --mode Incremental
 ```
 
-## Next: shared data and organisational sign-in
+## Next: activate shared data and organisational sign-in
 
-1. Register/configure a single-tenant Entra SPA with the deployed HTTPS redirect URI and approved delegated permissions.
-2. Implement MSAL sign-in and permitted SharePoint list reads; verify the actual staged Alex Morgan record appears.
-3. Build and connect authenticated save/approve/retry actions. Approval must write AddedContacts durably before removing staging; Dynamics remains read-only.
-4. Connect authenticated scan requests and recheck permissions and CORS. Until that is working, the cloud scan is run from the flow designer.
-
-See [flow build status](flow-build-status.md) and [frontend integration](../static-web-app-integration-workstream.md).
+The Entra/Graph adapter is prepared locally and tested with simulated API responses. The deployed site remains in sample-data mode until the [specific access setup](entra-access.md) is approved and configured. Then set the client ID and live mode, redeploy and verify real reads, corrections, direct AddedContacts creation, staging cleanup and count. No approval flow is needed. The ingestion flow remains designer-run; use Refresh records in the app.
 
 ## Remove only this demo when finished
 

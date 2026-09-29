@@ -31,8 +31,8 @@ The existing-contact exit branch is configured but has not yet been runtime-test
 
 1. **Flow owner:** test an existing-contact email; confirm termination occurs before AI and SharePoint writes. Test Dynamics/AI failures and concurrent duplicate handling. Add input validation, bounded real email text and controlled scan concurrency before replacing the fixed fixture.
 2. **Dynamics owner:** confirm property/development/premises and role mappings. Name-based candidate queries are not implemented and must never establish identity by themselves.
-3. **Flow owner:** build authenticated save/approve/retry actions. Recheck exact email on approval; save a durable AddedContacts result before staging cleanup. Test failure and retry paths.
-4. **App/integration owner:** configure Entra SSO, pilot access, Graph reads and authenticated flow invocation. Connect the generic Customer Capture UI and align its older relationship fixtures with the contact-only scan rule.
+3. **App owner:** activate the prepared direct Graph approval adapter after Entra/list access approval; verify corrected AddedContacts values, durable save-before-delete and count. No approval flow is planned.
+4. **App/integration owner:** configure Entra SSO, pilot assignment and selected-list reads/writes. The app uses Refresh records while the scan remains designer-run. The sample-data adapter is aligned to the contact-only rule.
 5. **Mailbox owner:** replace the Compose source with a small approved inbox batch once access and connector policy are verified. Keep the demo source labelled synthetic until then.
 
 See [Power Automate workstream](../power-automate-workstream.md), [SharePoint schema](sharepoint-schema.json) and [app integration workstream](../static-web-app-integration-workstream.md). No flow package export is included; the live designer is the current implementation.

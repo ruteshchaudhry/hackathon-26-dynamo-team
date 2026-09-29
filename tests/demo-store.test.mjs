@@ -6,19 +6,19 @@ test('approval persists outcome before removing staging and repeated calls stay 
   const store = createDemoStore(memory()); const row = store.read().pending[0];
   store.approve(row.id, row.version); store.approve(row.id, row.version);
   assert.equal(store.read().added.length, 1); assert.equal(store.read().pending.length, 2);
-  store.scan(); store.scan(); assert.equal(store.read().pending.length, 3);
+  store.scan(); store.scan(); assert.equal(store.read().pending.length, 2);
 });
-test('same contact at two properties shares one identity', () => {
+test('rescans never stage the same contact for another property', () => {
   const store = createDemoStore(memory()); store.scan();
   const rows = store.read().pending.filter(row => row.email === 'alex.morgan@example.com');
-  for (const row of rows) store.approve(row.id, row.version);
-  const [a, b] = store.read().added;
-  assert.equal(a.demoContactId, b.demoContactId); assert.equal(a.simulatedContactCreated, true); assert.equal(b.simulatedContactCreated, false);
+  assert.equal(rows.length, 1); store.approve(rows[0].id, rows[0].version); store.scan();
+  assert.equal(store.read().added.length, 1);
+  assert.equal(store.read().pending.filter(row => row.email === 'alex.morgan@example.com').length, 0);
 });
-test('missing target and stale edits do not approve or overwrite', () => {
+test('invalid email and stale edits do not approve or overwrite', () => {
   const store = createDemoStore(memory()); const row = store.read().pending[2];
-  assert.throws(() => store.approve(row.id, row.version), /Choose a property/);
-  store.save(row.id, row.version, { ...row, targetId: targets[0].id, role: 'Resident' });
+  const invalid = store.save(row.id, row.version, { ...row, email: 'invalid' });
+  assert.throws(() => store.approve(invalid.id, invalid.version), /valid email/);
   assert.throws(() => store.save(row.id, row.version, row), /changed/);
   assert.throws(() => store.approve(row.id, row.version), /changed/);
   assert.equal(store.read().added.length, 0);

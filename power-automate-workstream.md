@@ -2,7 +2,7 @@
 
 **Owner:** Power Automate teammate, to be assigned.
 
-**Scope:** Read Outlook, query live Dynamics, and process SharePoint suggestions and simulated additions. No Dynamics writes.
+**Scope:** Read Outlook, query live Dynamics, and create SharePoint suggestions. No Dynamics writes.
 
 ## Dependencies and build order
 
@@ -12,8 +12,8 @@ The SharePoint columns are configured. Use the actual list IDs and internal fiel
 
 1. Start with the manually triggered **Customer Capture - Scan sample emails** flow in the existing **Odevo Hackathon 2026** solution in environment `ae00c6cc-145f-41ea-bf30-1f0979a559c6` (Pre Dev). Use a Compose action containing [sample-email.json](setup/sample-email.json), so mailbox access is not a dependency.
 2. Prove one synthetic email through live Dynamics lookups into ContactStaging, then expand to a bounded batch of five. Mock email input does not mean mock CRM results.
-3. Prove edit/approval processing into AddedContacts, including retry and cleanup.
-4. Connect authenticated browser actions and verify the complete demo journey.
+3. Hand off ContactStaging records to the static app; it saves approvals directly into AddedContacts.
+4. Verify rescans skip records already approved by the app, including corrected emails using source mailbox/message identity.
 
 The Outlook connection is configured by the team. Signing into the web app does not automatically connect the user's mailbox. There are no invitation, reminder, digest, or admin flows in this scope.
 
@@ -34,44 +34,21 @@ When inbox access arrives, replace the sample input with Outlook.com Get emails 
 
 Serialise scan runs for this one-inbox POC and use unique keys to handle repeated triggers. Query approved demo data as well as Dynamics on every scan because Dynamics never receives the simulated additions.
 
-## Flow 2: Save edits, approve, and retry
+## Approval belongs to the static app
 
-The authenticated action receives a staging item ID, its expected version, and only the editable contact/target fields. Derive the reviewer from validated identity, not a browser-supplied reviewer name. Re-read the item, check access, and reject stale versions or changes to a processing item.
+Do not build a second approval flow. The browser uses delegated Graph access to save corrections, create an approved contact in AddedContacts, confirm the durable result and delete staging. See [frontend integration](static-web-app-integration-workstream.md). Dynamics is queried during scanning only; browser approval does not recheck or write Dynamics.
 
-- **Save edits:** Validate and save allowed fields on a pending suggestion. Keep unknown values pending. Recompute its candidate key and detect collisions.
-- **Approve:** Validate required email, resolved target references, and role; recheck Dynamics and AddedContacts; then process the result below.
-- **Retry:** Re-read the failed/cleanup-pending item and its durable result. Resume only the missing steps. A lookup/validation failure must not authorise a simulated addition.
-
-For approval, process one item at a time for the POC:
-
-1. Mark the validated suggestion Processing and preserve the approved values and trusted reviewer identity.
-2. Recheck live Dynamics by exact email. If found, record AlreadyExists with the actual contact ID and both creation flags false; do not simulate a missing relationship.
-3. If absent, check AddedContacts by CandidateKey and SourceStagingId and reuse any durable result. Otherwise allocate a demo identity and save one SimulatedAddition outcome with the reviewed target/role and appropriate simulation flags. Do not insert a Dynamics contact.
-4. Persist the approved result only once; list uniqueness and a re-read handle competing requests.
-5. Confirm the durable result, retain its item ID, and only then delete the staging item.
-6. Return the result item ID and accurate outcome. If deletion fails, retain CleanupPending and the result ID; retry cleanup without creating another result.
-
-Use sequential processing plus list uniqueness constraints and rechecks; do not rely on a disabled button to prevent duplicate approvals. Keep AddedContacts across rescans and retries. Handle a lost HTTP response by re-reading the durable result using SourceStagingId before repeating work.
-
-On an earlier failure, retain staging with Failed and a useful error. Use failure handling for failed/timed-out actions. Closing the browser must not undo an accepted cloud operation.
-
-## Browser action contract
-
-Expose authenticated actions for `scan`, `save`, `approve`, and `retry`. Restrict callers to the configured pilot users and check access to the requested staging item. Never accept arbitrary mailbox names, Dynamics endpoints, or SharePoint destinations from the browser.
-
-The flow owner and Rutesh must verify the tenant's HTTP-trigger authentication, token audience, browser CORS/preflight behaviour, and entitlements before finalising URLs. OAuth-protected HTTP triggers are the proposed route, not a claim of an already-working browser endpoint. Do not embed secret-bearing anonymous trigger URLs in JavaScript. If an authenticated relay is necessary, agree its hosting with Rutesh; Python's static file server is not that relay.
-
-Publish request/response examples and errors for every action. For the small demo batch, aim to return the completed result within the request timeout. If a call times out, report an unknown outcome and refresh persisted records; do not report success. Do not promise asynchronous progress polling without a tested status endpoint and durable status contract.
-
-If the browser trigger is not ready, a clearly labelled designer-run scan can demonstrate ingestion, but UI-triggered scan remains an incomplete acceptance item.
+The current app exposes **Refresh records**. It does not yet invoke the scan flow; run the existing manual flow in the designer for the demo. A future Scan now endpoint must use authenticated calls and verified browser CORS. Never embed a secret-bearing anonymous trigger URL.
 
 ## Handoff and acceptance
 
-- [ ] Provide connection setup, list mappings, action URLs/auth configuration, sample payloads, and flow exports where available.
-- [ ] Verify scan → review → approve → AddedContacts → staging cleanup from the UI.
-- [ ] Verify an exact-email match exits without staging, AI processing, or relationship additions.
-- [ ] Verify repeated scans, double approvals, stale edits, response loss, failed saves, and cleanup retries.
-- [ ] Verify a Dynamics lookup failure does not create a false missing-contact result.
-- [ ] Verify all Dynamics operations are reads and unauthorised actions are denied.
+- [ ] Test an existing Dynamics email and confirm termination before AI/staging.
+- [ ] Test failed Dynamics queries: no false missing-contact result.
+- [ ] Confirm rescanning an approved source message does not recreate staging even when the PM corrected the email.
+- [ ] Verify scan → app review → corrected AddedContacts record → staging removal → refreshed count.
+- [ ] Verify scan concurrency and actual unique-key rejection.
+- [ ] Replace synthetic input with the authorised inbox connector when ready.
 
-References: [SharePoint actions](https://learn.microsoft.com/en-us/sharepoint/dev/business-apps/power-automate/sharepoint-connector-actions-triggers), [HTTP-trigger authentication](https://learn.microsoft.com/en-us/power-automate/oauth-authentication).
+A future Dynamics import can consume AddedContacts as the approved source. That is a separate later integration, requiring fresh exact-email checks, validated mappings and import status; do not add Dynamics writes to this demo scan.
+
+References: [SharePoint actions](https://learn.microsoft.com/en-us/sharepoint/dev/business-apps/power-automate/sharepoint-connector-actions-triggers).

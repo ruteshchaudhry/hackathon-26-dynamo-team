@@ -2,7 +2,7 @@
 
 ## What is ready
 
-The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. It uses browser storage and has no live SSO, Outlook, AI, Dynamics, or SharePoint connection yet.
+The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. Default demo mode uses browser storage. A separate live Entra/Graph adapter is implemented but activation and live browser verification await the [access setup](entra-access.md).
 
 Run from the repository root:
 
@@ -13,7 +13,7 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
 Open http://localhost:8000 and choose **Open sample-data demo**. Use **Reset sample data** to restore the fictional examples. Run the store checks with:
 
 ```sh
-node --test tests/demo-store.test.mjs
+node --test tests/*.test.mjs
 ```
 
 ## 1. Sign in with the right accounts
@@ -36,7 +36,7 @@ The existing lists were reused and missing columns added on 29 September 2026:
 - `ContactStaging`
 - `AddedContacts`
 
-Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs are also recorded in frontend/config.js; the Graph site ID remains to be obtained. AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
+Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs are also recorded in frontend/config.js; the resolved Graph site ID is configured there too. AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
 
 CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Approved-user permissions and API access still need configuration/testing with the site owner. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
 
@@ -61,15 +61,13 @@ Use **AI Builder → Extract standard entities**, the option selected by Rutesh.
 
 Entity extraction supplies name evidence; it does not query Dynamics or prove identity. Keep unclear first/last names blank for PM review. Advisory name matching may use bounded `firstname`/`lastname` reads after zero email matches; never automatically link on a name alone. See [AI guidance](email-extraction-prompt.md).
 
-## 5. Prove approval storage
+## 5. Activate and test direct SharePoint approval
 
-Build the approval action from [Power Automate workstream](../power-automate-workstream.md). Recheck Dynamics and AddedContacts, save a durable simulated result, then remove the staging record. Test failed saves and cleanup retries. Never use a Dynamics create/update/delete action.
+Follow [the proposed Entra/list access configuration](entra-access.md) after explicit approval. Set the assigned SPA client ID and `mode: 'live'` in frontend/config.js. Sign in and load the real staged synthetic contact.
 
-## 6. Connect the static UI
+Correct its details and choose Approve & add. Confirm one AddedContacts record with the corrected values, removal from ContactStaging, and an increased Approved contacts created count after refresh/reload. Force a failed save and a cleanup failure in a controlled test to prove retry behavior. No second flow is needed and no Dynamics records are written.
 
-Configure the single-tenant Entra SPA registration, approved users, localhost redirect URI, delegated SharePoint/Graph reads, and authenticated flow actions. Required non-secret configuration placeholders are in [config.js](../frontend/config.js).
-
-Rutesh then replaces the demo adapter with live reads/actions and adds MSAL sign-in. Changing `mode` to `live` alone does not enable integration; the app intentionally refuses to enter an unimplemented live mode. Verify token audiences and browser CORS before finalising the action endpoint contract.
+The app has Refresh records while ingestion remains a manual designer-run flow. The approved SharePoint list can become the input to a later Dynamics import, with a fresh duplicate check and verified mappings.
 
 ## Status to record during setup
 
