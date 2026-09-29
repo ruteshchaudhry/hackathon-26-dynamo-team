@@ -2,101 +2,80 @@
 
 **Owner:** Rutesh Chaudhary.
 
-**Scope:** Single-page UI and integration with the team's Dataverse/Power Automate implementation.
+**Scope:** HTML, CSS, vanilla JavaScript, organisational SSO, and integration with SharePoint and Power Automate.
 
-**Status:** Engineering handoff; this document does not create application code or deploy services.
+## Ownership
 
-## Ownership and dependencies
+- **Rutesh:** Frontend, sign-in, list reads, flow action calls, result display, and end-to-end integration.
+- [SharePoint owner](sharepoint-workstream.md): Two lists, field mappings, permissions, and duplicate constraints.
+- [Power Automate owner](power-automate-workstream.md): Outlook connection, live Dynamics queries, staging, validated edits/approvals, and cleanup.
+- [Dynamics owner](dataverse-workstream.md): Existing schema mappings and read-only access.
 
-The product team owns Miro's Process 1, Process 2, and Process 3. Implement those journeys as three views in one application.
+Rutesh does not create Dataverse tables or implement cloud flows. Dynamics is queried live by the flows; the frontend does not need a Dynamics write connection.
 
-- [Dataverse owner](dataverse-workstream.md): tables, existing CRM mappings, permissions, and sample CRM records.
-- [Power Automate owner](power-automate-workstream.md): mailbox connections, flows, background work, email delivery, and status reporting.
-- **Rutesh:** frontend, SSO integration, Dataverse API client, flow-request submission, progress display, and end-to-end integration testing.
+## Build the simple journey
 
-Rutesh does not implement Dataverse schema changes or Power Automate flows. Agree missing backend behaviour with its owner rather than implementing a second processing system in the UI.
+| View/control | Behaviour |
+|---|---|
+| Login | Organisational Microsoft SSO for selected R&R users |
+| Pending review | Read permitted ContactStaging items; show pending, processing, and failed entries |
+| Scan now | Request the configured inbox scan and refresh the queue after a verified result |
+| Edit | Correct email, names, target property/development/premises, and relationship |
+| Approve selected | Submit valid items and show each result independently |
+| Retry | Request safe retry for a failed operation or staging cleanup |
+| Added contacts | Display AddedContacts outcomes, clearly identifying simulated additions and AlreadyExists results |
 
-Source journeys: [Process 1](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369284605), [Process 2](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369571110), [Process 3](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685370564089).
+Use one review screen and an added-contacts view. Remove admin, invitations, reminders, onboarding, Process 1/2/3 screens, rejection controls, and digest-specific routes from the implementation plan.
+
+Do not invent unknown names or property matches. Require valid email, resolved target references, and a relationship before approval. Keep unreviewed or incomplete records pending. Show short source evidence and the configured demo mailbox where useful.
+
+Use **Added to demo contacts**, never **Created in Dynamics**. An existing contact with a simulated new relationship must not appear as a newly created person. Show loading, empty, denied-access, expired-session, validation, processing, failure, and success states with accessible labels and keyboard focus.
 
 ## Stack and local development
 
-- [ ] Build the UI with HTML, CSS, and vanilla JavaScript modules; no frontend framework is required.
-- [ ] Use MSAL.js for Microsoft sign-in rather than implementing OAuth manually.
-- [ ] Serve the frontend folder with Python's static file server during development. Python serves the files; it is not the backend for scans, approvals, or emails.
-- [ ] Use hash-based views such as `#/audit`, `#/review`, and `#/admin` so the same static files can run locally and on static hosting without route-rewrite dependencies.
-- [ ] Separate sample-data and live Dataverse adapters behind the same frontend methods. Clearly label sample-data mode and simulated operations.
-- [ ] Keep required demo assets available locally if an offline sample-data demonstration is needed.
+Build with HTML, CSS, vanilla JavaScript modules, and MSAL.js for sign-in. Use simple hash routes such as `#/review` and `#/added`. Separate sample-data and live adapters; label fixtures and simulated sign-in clearly.
 
-Run from the dedicated frontend folder once it exists:
+From the dedicated frontend folder once created:
 
 ```bash
 python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open `http://localhost:8000`. Do not serve the entire repository or folders containing credentials. Live Entra sign-in, Dataverse, and Power Automate still require internet access.
+Open `http://localhost:8000`. Python only serves frontend files; flows and SharePoint handle data. Live sign-in, Dynamics lookups, and flow execution need internet access.
 
-## Build the three views
+Use Azure Static Web Apps Free if team hosting is available, or the local demo machine. Register the actual hosted and localhost redirect URLs in the Entra SPA configuration. Validate hosting and integration separately; static hosting does not provide Power Automate or Dynamics entitlements.
 
-| View | Actions and states |
+## Integration contract
+
+| Frontend method | Backing operation |
 |---|---|
-| Process 1: Initial audit | Invitation landing, sign-in, actual configured inbox status, Scan now, queued/running progress, suggestion review, accept/edit/reject, completion and retry feedback |
-| Process 2: Weekly review | Digest-link landing, pending suggestions, accept all valid suggestions, edit, reject with reason, complete review, per-item write outcomes |
-| Process 3: Admin monitoring | Invite approved pilot users, invitation status, connection status, audit progress, select users and request reminders |
+| loadPending / loadAdded | Authenticated Microsoft Graph reads of permitted list items |
+| scanInbox | Authenticated Power Automate scan action for the configured mailbox |
+| saveSuggestion | Authenticated flow action with editable fields and expected item version |
+| approveSuggestion | Authenticated flow action with staging ID, expected version, and reviewed values |
+| retrySuggestion | Authenticated flow action using the saved failure/result state |
 
-- [ ] Reuse the contact-review UI across the initial and weekly review flows.
-- [ ] Display email, first name, last name, property/development/premises as required by the actual schema, and relationship type. Show short source evidence where useful.
-- [ ] Leave unknown values blank, explain missing required fields, and prevent incomplete suggestions from being submitted for creation.
-- [ ] Save edits and review decisions explicitly. Digest links select a view or intended action; they never approve records simply by opening.
-- [ ] Require a reason for rejection. Preserve unresolved suggestions in the queue.
-- [ ] Show empty, loading, permission-denied, expired-session, validation-error, failed-write, and successful-completion states.
-- [ ] Provide keyboard access, visible focus, labelled fields, readable errors, and status text that does not rely only on colour.
+Use the [SharePoint field contract](sharepoint-workstream.md). The flow performs all mutations and authoritative validation. Reviewers need list read access; the automation connection writes outcomes and deletes successful staging items.
 
-For the POC, show the one real team-configured mailbox accurately. If self-service mailbox connection is not implemented by the integration team, show its actual configured/pending state rather than a simulated Connect success.
+- [ ] Obtain the tenant/client IDs, exact redirect URLs, site/list IDs, internal column names, and approved delegated permissions.
+- [ ] Configure single-tenant SSO and selected-user access with the identity owner. Enforce permissions in SharePoint and flow actions, not only in the UI.
+- [ ] Obtain verified action endpoints, token audience/scopes, request/response examples, error formats, and browser CORS behaviour from the flow owner.
+- [ ] Use the correct token for each API audience. Do not reuse a Microsoft Graph token for a differently protected endpoint.
+- [ ] Handle stale versions by reloading and asking the user to review the current record instead of overwriting it.
+- [ ] Refresh pending and added records after processing. Identify durable outcomes by SourceStagingId/result ID; disappearance from staging alone is not success evidence.
+- [ ] On request timeout, show an unknown outcome and check persisted results before offering a safe retry.
+- [ ] Disable duplicate submissions while a request is pending, while retaining backend duplicate protection.
+- [ ] Keep secrets and anonymous secret-bearing flow URLs out of frontend code and Git.
 
-## Live integration contract
+HTTP-trigger authentication and browser access are integration dependencies to prove, not assumed capabilities of the local static server. If a relay is required, agree and document it before implementing it. A manually run scan is a labelled temporary fallback, not completion of Scan now.
 
-Use [the Dataverse handoff](dataverse-workstream.md) as the shared contract. Its names are conceptual until the Dataverse owner publishes logical names, entity sets, lookup navigation properties, and numeric choice values.
+## Delivery checks
 
-| UI action | Integration behaviour |
-|---|---|
-| Load suggestions | Authenticated Dataverse query for permitted Suggestion rows only |
-| Scan now | Create an authorised Request row of type Scan; observe its status and refresh suggestions when finished |
-| Save edits | Update editable suggestion fields with conflict detection to avoid overwriting another reviewer's changes |
-| Submit approvals | Mark valid, selected suggestions approved using the agreed trigger contract; display processing results |
-| Reject | Save Rejected decision and reason; no CRM creation request |
-| Invite / Remind | Create the corresponding Request only for authorised admins; read actual delivery/progress results |
-| Retry | Use the backend owner's documented retry action; do not force-reset flow-controlled states |
+- [ ] Deliver frontend source, a non-secret configuration example, and local startup instructions.
+- [ ] Demonstrate sign-in, live scan, correction, approval, and added demo records with the configured services.
+- [ ] Verify multiple properties per contact, repeat scans/approvals, failed saves, cleanup retries, stale updates, and denied access with the other owners.
+- [ ] Confirm pending records disappear only after a durable outcome and failed records remain reviewable.
+- [ ] Confirm the UI accurately distinguishes simulated additions from existing Dynamics data.
+- [ ] Confirm no admin screens or Dynamics writes are included.
 
-- [ ] Use authenticated `fetch()` calls to Dataverse with the signed-in user's access token.
-- [ ] Poll requests/processing state while relevant views are open, handle errors, and stop polling when work completes or the user leaves. Reopening the view must recover the current server state.
-- [ ] Distinguish submission, processing, and success. A successful request save is not a successful CRM write, and a disappearing staging record alone is not proof of completion.
-- [ ] Do not put client secrets, privileged connection credentials, or secret-bearing Power Automate URLs in JavaScript, URLs, or Git.
-- [ ] Keep tenant ID, client ID, environment URL, redirect URLs, and the schema mapping in non-secret configuration.
-
-The Python server does not enforce Dataverse permissions or replace the cloud flows. Business-data access and privileged actions must be checked by Dataverse/automation, not only by UI controls.
-
-## SSO and hosting
-
-- [ ] Coordinate a single-tenant Entra SPA registration, delegated Dataverse permission, selected R&R user assignment, and Dataverse security roles with the environment/identity owner.
-- [ ] Register the actual localhost and hosted redirect URLs used by MSAL, including any redirect page required by the selected library version.
-- [ ] Host the static build on **Azure Static Web Apps Free** when team access is ready. MSAL runs in the application; Static Web Apps' built-in custom authentication feature requires Standard.
-- [ ] Treat the static application shell as publicly downloadable. Enforce selected-user data access and admin privileges in the backing services.
-- [ ] Use the local demo machine if cloud hosting is unavailable. Digest/invitation links must use that machine's local application URL for the demonstration; localhost links opened on other machines point to those other machines.
-
-## Deliverables and completion checks
-
-- [ ] Commit the frontend and sample data with one-command local startup instructions and a non-secret configuration example.
-- [ ] Demonstrate all three product views with labelled sample data while backend work proceeds.
-- [ ] Integrate the real SSO and Dataverse staging table after the contract is delivered.
-- [ ] Trigger a real scan from the UI and display its verified completion.
-- [ ] Approve a sample contact/relationship, verify the actual Dynamics outcome and staging cleanup, and display a failed-write/retry case.
-- [ ] Verify rejection reasons, duplicate prevention, unauthorised access, and admin-only action enforcement with the other owners.
-- [ ] Confirm the same frontend works from the local server and, if provisioned, Static Web Apps Free.
-
-## Decisions and sequencing
-
-Build the sample-data UI first. The Dataverse owner publishes the contract next; the flow owner proves scan and approval behaviour; Rutesh then connects and tests the live end-to-end journey.
-
-Weekly digest is the current product direction. Scan frequency and the existing-contact/missing-relationship branch remain product decisions; expose the confirmed behaviour consistently rather than choosing different defaults in the UI and flows.
-
-References: [Dataverse JavaScript SPA](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/quick-start-js-spa), [Static Web Apps custom authentication](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom), [Python local file server](https://docs.python.org/3/library/http.server.html).
+References: [Microsoft Graph list items](https://learn.microsoft.com/en-us/graph/api/resources/listitem?view=graph-rest-1.0), [Power Automate authenticated triggers](https://learn.microsoft.com/en-us/power-automate/oauth-authentication), [Python static file server](https://docs.python.org/3/library/http.server.html).

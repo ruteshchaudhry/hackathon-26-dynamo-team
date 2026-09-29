@@ -2,102 +2,70 @@
 
 **Owner:** Power Automate teammate, to be assigned.
 
-**Consumer:** Rutesh (static web app and integration).
+**Scope:** Read Outlook, query live Dynamics, and process SharePoint suggestions and simulated additions. No Dynamics writes.
 
-**Status:** Engineering handoff; flows have not been built or deployed by this document.
+## Dependencies and build order
 
-## Responsibility and dependencies
+Use the [SharePoint field contract](sharepoint-workstream.md), [Dynamics read mappings](dataverse-workstream.md), and [frontend contract](static-web-app-integration-workstream.md).
 
-Own Outlook/Dataverse connections, the cloud flows, server-side validation, execution status, error handling, and solution export. Rutesh owns the UI and its API calls, not flow creation or maintenance.
+1. Configure one authorised demo inbox and read-only Dynamics access.
+2. Prove a bounded scan of five synthetic emails into ContactStaging.
+3. Prove edit/approval processing into AddedContacts, including retry and cleanup.
+4. Connect authenticated browser actions and verify the complete demo journey.
 
-Use the field/status contract in [Dataverse workstream](dataverse-workstream.md). Coordinate UI payloads and results with [Static web app and integration workstream](static-web-app-integration-workstream.md). Product journeys and source links are in the [proposal](hackathon-proposal-rutesh.md).
-
-Build in the Dynamics **development environment**, using one authorised demo inbox and synthetic emails. Keep all flows and connection references in **Customer Capture POC**. The Outlook connection is configured by the team; signing into the website does not automatically create a Power Automate Outlook connection for that user.
-
-## Build order
-
-1. Manually test reading five sample messages and creating pending staging suggestions.
-2. Replace the manual trigger with the agreed Dataverse Scan-request trigger and expose progress to the UI.
-3. Implement approval processing and demonstrate one complete contact/relationship write.
-4. Add the weekly digest and a designer test run for the hackathon.
-5. Add admin invitation/reminder processing and progress updates.
-
-Continuous scheduled scanning is a follow-up once product confirms the interval. Do not treat the earlier 15-minute proposal as a final requirement.
+The Outlook connection is configured by the team. Signing into the web app does not automatically connect the user's mailbox. There are no invitation, reminder, digest, or admin flows in this scope.
 
 ## Flow 1: Scan inbox
 
-**Final trigger:** Dataverse row added, filtered to `Record kind = Request`, `Request type = Scan`, and `Request status = Queued`.
+- [ ] Expose Scan now through the verified authenticated action contract below; use a manual designer run while building it.
+- [ ] Restrict the flow to the configured demo mailbox/folder and approved R&R callers.
+- [ ] Read a bounded sample batch, including read messages. Capture sender, recipients, mailbox, source message ID, received time, subject, and a short excerpt.
+- [ ] Parse explicit sample property identifiers and role labels. Filter irrelevant/internal messages using agreed sample rules; do not treat every sender as a customer.
+- [ ] Query live Dynamics contacts and target records, then check the actual contact-target-role relationship. A failed query is an error, not proof of absence.
+- [ ] Check AddedContacts and ContactStaging for both business and source keys before adding a suggestion.
+- [ ] Stage only missing contact/relationship work. Preserve uncertain fields for review rather than inventing them.
+- [ ] Return counts for scanned messages, new suggestions, skipped candidates, and errors. Describe this as a sample batch scan, not a complete mailbox audit.
 
-- [ ] Validate the trusted requester and configured demo mailbox, then set the request to Running.
-- [ ] Use Outlook **Get emails (V3)** for the agreed folder and bounded sample batch. Include read messages and do not download attachments.
-- [ ] For each email, capture sender email, recipients, source mailbox, message identifier, received time, subject, and a short evidence excerpt.
-- [ ] Normalise the sender email and query existing Dynamics contacts. Multiple matches require review; never silently choose an arbitrary record.
-- [ ] Apply the team's customer-relevance rules. The fixture set must distinguish customer messages from internal, supplier, or unrelated messages; do not equate every external sender with a customer.
-- [ ] Parse the explicit property reference and role labels in sample emails and resolve them against existing Dynamics records. Do not invent missing names or relationships.
-- [ ] Apply the agreed existing-contact policy, and check both current CRM state and staging rows before adding suggestions.
-- [ ] Write only eligible missing-contact/relationship suggestions, with Pending review and Pending processing status. Uncertain information remains visible for correction.
-- [ ] Update the request with counts, timestamps, and Completed or Failed. Do not report a truncated sample scan as a complete mailbox audit.
+Serialise scan runs for this one-inbox POC and use unique keys to handle repeated triggers. Query approved demo data as well as Dynamics on every scan because Dynamics never receives the simulated additions.
 
-Use a small deterministic batch for the POC. Review connector search/paging limitations before increasing its scope. Messages moved out of the selected folder will require a separate ingestion strategy; a weekly digest is not a weekly-only inbox scan.
+## Flow 2: Save edits, approve, and retry
 
-## Flow 2: Process approved suggestions
+The authenticated action receives a staging item ID, its expected version, and only the editable contact/target fields. Derive the reviewer from validated identity, not a browser-supplied reviewer name. Re-read the item, check access, and reject stale versions or changes to a processing item.
 
-**Trigger:** Dataverse row modified, filtered to Suggestion rows with Review decision Approved and Processing status Pending. Select only the appropriate scalar trigger columns from the final schema.
+- **Save edits:** Validate and save allowed fields on a pending suggestion. Keep unknown values pending. Recompute its candidate key and detect collisions.
+- **Approve:** Validate required email, resolved target references, and role; recheck Dynamics and AddedContacts; then process the result below.
+- **Retry:** Re-read the failed/cleanup-pending item and its durable result. Resume only the missing steps. A lookup/validation failure must not authorise a simulated addition.
 
-- [ ] Re-read the current row and validate approval attribution, reviewer access, required names/email, target record(s), and relationship type.
-- [ ] Set Processing and process approved rows sequentially for the POC. Repeated triggers must not create repeated writes.
-- [ ] Recheck contacts by normalised email. Reuse one unambiguous match; create only when no match exists. Preserve the resulting contact ID.
-- [ ] Check the actual contact-target-role relationship and create only the missing relationship. Preserve its resulting ID.
-- [ ] Record the verified successful outcome and update any agreed audit/request progress before deleting the suggestion.
-- [ ] Delete the suggestion only after all required operations succeed. A deletion failure must be distinguishable from a CRM creation failure.
-- [ ] On failure, retain the suggestion, error, and any partial result IDs. A retry resumes safely and rechecks existing records.
+For approval, process one item at a time for the POC:
 
-The UI saves edits first and submits approvals when the user chooses to complete the review. Clicking a digest link does not change a review decision. Rejected suggestions require a reason and do not trigger CRM creation.
+1. Mark the validated suggestion Processing and preserve the approved values and trusted reviewer identity.
+2. Query live Dynamics. If the contact exists, reuse its ID. If absent, reuse an existing demo contact identity for the email or allocate one. Do not insert a contact in Dynamics.
+3. Check the complete contact-target-role key in Dynamics and AddedContacts. If a demo result already exists, reuse it. Otherwise write the approved outcome to AddedContacts with the correct simulated-contact/relationship flags.
+4. If Dynamics now contains everything, record an AlreadyExists outcome with both creation flags false, so the UI can explain why no addition was needed.
+5. Confirm the durable result, retain its item ID, and only then delete the staging item.
+6. Return the result item ID and accurate outcome. If deletion fails, retain CleanupPending and the result ID; retry cleanup without creating another result.
 
-Use a Try scope plus failure handling configured with **Run after** for failed/timed-out actions. Publish the supported retry action to Rutesh; the frontend must not reset arbitrary processing states on its own.
+Use sequential processing plus list uniqueness constraints and rechecks; do not rely on a disabled button to prevent duplicate approvals. Keep AddedContacts across rescans and retries. Handle a lost HTTP response by re-reading the durable result using SourceStagingId before repeating work.
 
-## Flow 3: Weekly digest
+On an earlier failure, retain staging with Failed and a useful error. Use failure handling for failed/timed-out actions. Closing the browser must not undo an accepted cloud operation.
 
-**Trigger:** Weekly recurrence; weekday, time, and timezone require product confirmation.
+## Browser action contract
 
-- [ ] Read only pending Suggestion rows for each authorised reviewer.
-- [ ] Reconcile against current Dynamics contacts and relationships, so the digest does not propose work already completed elsewhere.
-- [ ] Group the remaining suggestions by reviewer and property, showing concise details and counts.
-- [ ] Send the weekly Outlook email with links for Accept all, Edit, and Reject. Each opens the appropriate SSO web-app view; the email links themselves perform no write.
-- [ ] Encode only the required record/review identifiers in links. Do not put access tokens, flow secrets, or email bodies in URLs.
-- [ ] Use the agreed hosted URL or the exact localhost URL on the demonstration laptop. A localhost link works on the machine opening it, not remotely on another teammate's machine.
+Expose authenticated actions for `scan`, `save`, `approve`, and `retry`. Restrict callers to the configured pilot users and check access to the requested staging item. Never accept arbitrary mailbox names, Dynamics endpoints, or SharePoint destinations from the browser.
 
-Provide a way to test-run the digest from the flow designer during the demo rather than waiting for the scheduled day.
+The flow owner and Rutesh must verify the tenant's HTTP-trigger authentication, token audience, browser CORS/preflight behaviour, and entitlements before finalising URLs. OAuth-protected HTTP triggers are the proposed route, not a claim of an already-working browser endpoint. Do not embed secret-bearing anonymous trigger URLs in JavaScript. If an authenticated relay is necessary, agree its hosting with Rutesh; Python's static file server is not that relay.
 
-## Flow 4: Admin invitations and reminders
+Publish request/response examples and errors for every action. For the small demo batch, aim to return the completed result within the request timeout. If a call times out, report an unknown outcome and refresh persisted records; do not report success. Do not promise asynchronous progress polling without a tested status endpoint and durable status contract.
 
-**Trigger:** Dataverse Request row added with Invite or Remind type and Queued status.
+If the browser trigger is not ready, a clearly labelled designer-run scan can demonstrate ingestion, but UI-triggered scan remains an incomplete acceptance item.
 
-- [ ] Validate administrator authority using trusted identity and permissions; never trust a browser-supplied `isAdmin` flag.
-- [ ] Restrict invitation/reminder recipients to the approved R&R pilot scope.
-- [ ] Send the relevant Outlook email and update request delivery outcome or error.
-- [ ] Track pending invitation, successful inbox connection, and audit completion as distinct events. Do not claim the mailbox is connected just because an invitation was sent.
-- [ ] Make each request safe against retries and repeated triggers; expose any delivery uncertainty rather than blindly sending duplicates.
+## Handoff and acceptance
 
-The POC uses one team-configured mailbox connection. Product's future per-user inbox onboarding must be labelled accordingly until implemented; do not fake a live connection in the UI.
+- [ ] Provide connection setup, list mappings, action URLs/auth configuration, sample payloads, and flow exports where available.
+- [ ] Verify scan → review → approve → AddedContacts → staging cleanup from the UI.
+- [ ] Verify an existing contact with a missing relationship and one contact linked to multiple properties.
+- [ ] Verify repeated scans, double approvals, stale edits, response loss, failed saves, and cleanup retries.
+- [ ] Verify a Dynamics lookup failure does not create a false missing-contact result.
+- [ ] Verify all Dynamics operations are reads and unauthorised actions are denied.
 
-## Connection and frontend handoff
-
-- [ ] Use solution connection references and coordinate required entitlements/permissions with the environment owner.
-- [ ] Keep connection credentials and secret-bearing HTTP trigger URLs out of Git and the browser.
-- [ ] Confirm request fields, accepted values, progress statuses, counts, errors, and approval/retry behaviour with Rutesh before switching from fixtures to live mode.
-- [ ] Confirm where Rutesh reads completion after a suggestion is deleted; disappearance alone is not proof that the CRM writes succeeded.
-- [ ] Deliver the solution export, connection-reference mapping, configured sample inbox/folder, exported flow definitions where practical, and a short runbook with verified test cases.
-
-## Acceptance checklist
-
-- [ ] Scan five fixture emails from the UI; progress ends in an accurate result.
-- [ ] Repeating a scan does not duplicate pending suggestions or recreate already completed CRM work.
-- [ ] An approved new contact gets the correct relationship; partial failure and retry do not duplicate either.
-- [ ] Existing-contact relationship behaviour matches the product team's confirmed choice.
-- [ ] Rejection preserves its reason and causes no CRM write.
-- [ ] Weekly digest links open the correct review view and require authorised sign-in.
-- [ ] Non-admin invitation requests and unauthorised mailbox/record targets are rejected server-side.
-- [ ] Closing the UI during processing does not stop the cloud flow.
-
-References: [Dataverse triggers](https://learn.microsoft.com/en-us/power-automate/dataverse/create-update-delete-trigger), [Outlook connector](https://learn.microsoft.com/en-us/connectors/office365connector/), [solution connection references](https://learn.microsoft.com/en-us/power-apps/maker/data-platform/create-connection-reference).
+References: [SharePoint actions](https://learn.microsoft.com/en-us/sharepoint/dev/business-apps/power-automate/sharepoint-connector-actions-triggers), [HTTP-trigger authentication](https://learn.microsoft.com/en-us/power-automate/oauth-authentication).

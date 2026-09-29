@@ -1,162 +1,71 @@
 # R&R Inbox Contact Discovery
 
-**Author:** Rutesh Chaudhary  
-**Status:** Proposal for team review  
-**Purpose:** Capture the agreed hackathon scope for reconciliation with the Product Director’s requirements before implementation.
+**Author:** Rutesh Chaudhary
+
+**Status:** Simplified hackathon scope, updated 29 September 2026. Implementation handoff; services have not been provisioned by this document.
 
 ## 1. Problem and objective
 
-Property managers communicate with contacts through Outlook, but some contacts and their relationships to properties are missing from Dynamics.
+Property managers communicate with contacts through Outlook, but some contacts and their relationships to properties are missing from Dynamics. Demonstrate discovering those gaps, reviewing suggestions, and approving simulated additions.
 
-The solution will collect relevant email information into a separate Dataverse staging table. Property managers will review the suggestions and approve them before contacts or relationships are created in Dynamics.
-
-This is a hackathon POC focused on a simple, demonstrable journey.
+Power Automate reads Outlook and checks Dynamics through live API calls. SharePoint stores both pending suggestions and approved demo records. Dynamics is read-only throughout the POC: no new Dataverse tables, schema changes, or contact/relationship writes.
 
 ## 2. Agreed user journey
 
-Aligned with the Miro [MVP Scope](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685363306144) and the three process diagrams, reviewed on 29 September 2026.
+1. An authorised R&R user signs into the static web app using organisational Microsoft SSO.
+2. The user sees pending suggestions and can choose **Scan now** for the one configured demo inbox.
+3. Power Automate reads a bounded batch of sample emails, captures sender and recipients, and extracts explicit property references and relationship labels.
+4. The flow queries live Dynamics contacts, existing relationships, and property/development/premises records. It also checks pending and previously approved demo records to avoid repeat suggestions.
+5. Missing contacts or relationships become records in the **ContactStaging** SharePoint List. An existing contact can still need a relationship to another property.
+6. The user reviews and corrects email, names, target property/development/premises, and relationship, then approves selected records. Uncertain or incomplete entries remain pending.
+7. Power Automate rechecks live Dynamics and the approved demo records. Required simulated additions are saved in **AddedContacts**; nothing is written to Dynamics.
+8. The staging entry is removed only after its durable outcome has been recorded. Failed entries remain available for retry. The UI displays **Added to demo contacts** for simulated additions and **Already exists** when the recheck finds no work left.
+9. The user can open **Added contacts** to see approved demo outcomes.
 
-### A. First-time inbox audit
+## 3. Data and responsibilities
 
-1. An administrator adds an authorised R&R user's email address to the audit list and sends an invitation to the **Customer Capture** tool.
-2. The user follows the invitation, signs into the static web app using organisational Microsoft SSO, and connects their authorised Outlook inbox. The POC uses one configured demo inbox.
-3. The user starts the initial audit. The web app initiates Power Automate scanning, captures sender and recipient details, and compares sender email addresses with existing Dynamics contacts.
-4. The tool checks whether a new sender is relevant for a **customer** contact relationship before collecting further details. It proposes email, first name, last name, property/development, premises, and relationship type. For the POC, sample emails contain explicit property references and role labels; missing or uncertain values remain for user review.
-5. Suggestions are stored in the custom Dataverse staging table and displayed in the web app. If there are no suggestions, the audit can complete without creating records.
-6. The user reviews each suggestion and chooses **Accept**, **Edit**, or **Reject**. Editing returns the corrected details to review. Rejection requires a reason, which the platform records; rejected suggestions do not create Dynamics records.
-7. The platform writes only accepted contacts and relationships to Dynamics, rechecking for duplicates before each write. Successfully processed staging records are deleted; failed records remain available for retry. The initial audit is complete when all suggestions have been resolved and approved writes have succeeded.
-
-Source: [Process 1: First-time inbox audit](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369284605).
-
-### B. Ongoing capture and weekly review
-
-1. Power Automate continues capturing relevant email information into the staging table. **Scan timing is to be agreed**, as marked in Miro; the earlier 15-minute interval is a proposal, not a confirmed MVP requirement. **Scan now** remains the proposed manual control for the web app and hackathon demonstration.
-2. At the end of each week, staged suggestions are compared with Dynamics again to identify records that have already been created since capture and avoid duplicate suggestions.
-3. The user receives a **weekly Outlook digest** containing suggested contacts and contact relationships. Its **Accept all**, **Edit**, and **Reject** calls to action open the web app; following an email link does not itself approve or create records.
-4. In the web app, the user accepts all valid suggestions, edits and approves corrected suggestions, or rejects suggestions with reasons. Any undecided suggestions remain in the review queue until resolved.
-5. When the user completes the review, Power Automate rechecks Dynamics and creates only approved, missing contacts and relationships. The app distinguishes successful writes from failures; only successfully processed staging records are deleted.
-
-Source: [Process 2: Weekly contact review](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369571110).
-
-### C. Admin invitations and monitoring
-
-An authorised administrator signs in, invites one or more R&R users by email, and monitors pending invitations, successful inbox connections, and completed audits. The administrator can select users and send reminders. This provides the usage-monitoring panel identified in the MVP scope; the POC demonstrates it with the configured demo user/inbox.
-
-Source: [Process 3: Admin invitations and monitoring](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685370564089).
-
-### Alignment points for team review
-
-- **Digest cadence:** Miro specifies a weekly digest. This journey supersedes the earlier daily-summary proposal; the other sections of this document have not been revised in this section-only update.
-- **Existing contacts:** The MVP Scope gateway ends processing when an email address already exists in Dynamics, while the initial-audit diagram includes missing contact relationships. The team needs to confirm whether suggesting a missing relationship for an existing contact is in the MVP. Existing contacts must not be recreated in either case.
-- **Rejections:** Miro requires a rejection reason to be recorded. The retention and repeat-suggestion rules remain to be agreed; rejection must not be treated as approval or successful creation.
-
-## 3. Data and integrations
-
-Reuse the existing Dynamics tables:
-
-- Contact.
-- Contact Relationship.
-- Property/Development.
-- Premises.
-
-Create **one custom Dataverse staging table** for scraped data awaiting review. Do not introduce replacement property or relationship tables.
-
-The PM-facing fields are:
-
-| Field | Agreed behaviour |
+| Component | Responsibility |
 |---|---|
-| Email | Sender’s email; used to find an existing contact |
-| First name | Extract when available; otherwise leave blank |
-| Last name | Extract when available; otherwise leave blank |
-| Property / Development / Premises | Identify and select the correct existing Dynamics record |
-| Relationship to the property | Select the existing relationship type or role |
+| Outlook | Source emails from one team-configured inbox |
+| Dynamics / Dataverse | Live, read-only source of existing contacts, relationships, properties/developments, and premises |
+| Power Automate | Inbox reading, parsing, live comparison, staging, validated approvals, duplicate checks, and cleanup |
+| SharePoint ContactStaging | Pending review and failed processing records |
+| SharePoint AddedContacts | Approved demo contact/relationship outcomes and durable duplicate detection |
+| Static web app | SSO, pending review, edit and approve, scan control, results, and added contacts |
 
-Retain supporting information behind the scenes: recipient addresses, source mailbox, email identifier, timestamp, subject, short supporting excerpt, existing contact match, review status, reviewer, and processing error.
+The PM-facing fields are email, first name, last name, property/development/premises, and relationship to the property. Keep the actual Dynamics IDs alongside display labels. Supporting fields retain mailbox, source message ID, recipients, time, a short supporting excerpt, reviewer, processing status, and errors.
 
-Missing names or relationships must not be invented. Uncertain property matches require PM review.
+Do not invent missing names or roles. Ambiguous contact or property matches require correction before approval. One contact can have different relationships across several properties; duplicate detection must preserve these distinctions.
 
-**Technology direction:**
+Use two SharePoint Lists as the agreed storage. Do not implement CSV or Excel databases.
 
-- Outlook provides the source emails and daily summary delivery.
-- Power Automate handles scanning, staging, summaries, and approved Dynamics writes.
-- Dataverse stores the staging records and existing business data.
-- The static web app communicates with Dataverse and initiates Power Automate scanning.
-- Microsoft Entra SSO restricts access to selected R&R users with the required Dataverse permissions.
+## 4. POC boundaries
 
-## 4. Hackathon scope and demonstration
+Use one configured Outlook inbox, synthetic sample emails, and existing sample data in the Dynamics development environment. Sample messages contain explicit property identifiers and role labels; AI extraction is not required.
 
-Use **one Outlook inbox**, sample emails, and sample records in the **Dynamics development environment**.
+Build only login, pending review, editing, approval, Scan now, and added demo contacts. Exclude admin dashboards, invitations, reminders, self-service mailbox onboarding, the former Process 1/2/3 screens, rejection workflows, and daily/weekly digests. Scheduled scanning and organisation-wide rollout are outside this demo scope.
 
-Use explicit property identifiers and role labels to make the demo predictable. AI extraction is not required for this POC.
+The general data model still permits multiple inboxes per property and multiple properties per inbox or contact.
 
-Demonstrate:
+## 5. Demonstration checks
 
-- A missing contact and relationship being suggested and created after approval.
-- An existing contact receiving a missing relationship without creating another contact.
-- A contact associated with more than one property.
-- Missing information being corrected before approval.
-- Repeated scans and approvals avoiding duplicate contacts and relationships.
-- Successful processing removing the staging record.
-- A failed operation preserving the staging record for retry.
-- An unauthorised user being denied access.
+- [ ] A new sender produces a pending suggestion after a live Dynamics lookup.
+- [ ] Approval creates the simulated result in AddedContacts and removes staging only after success.
+- [ ] An existing Dynamics contact receives a simulated missing relationship without being treated as a new contact.
+- [ ] The same contact can have different property relationships.
+- [ ] Missing or ambiguous information can be corrected before approval.
+- [ ] Repeated scans, approval clicks, and retries do not duplicate pending or approved records.
+- [ ] A failed save preserves staging; a cleanup failure does not repeat the successful addition.
+- [ ] A record added independently to Dynamics between scan and approval is recognised and reported accurately.
+- [ ] Unauthorised users cannot read review data or trigger actions.
+- [ ] Dynamics data and schemas remain unchanged.
 
-The wider requirement remains many-to-many: multiple inboxes can concern the same property; an inbox can concern multiple properties; a contact can have different relationships across properties. Organisation-wide mailbox rollout is outside the POC.
+## 6. Delivery and remaining inputs
 
-## 5. Details to confirm with the team
+Rutesh builds HTML, CSS, and vanilla JavaScript with organisational SSO. Serve the frontend locally using Python's static file server; use Azure Static Web Apps Free if hosting is available. The Python server serves files only; cloud flows perform processing.
 
-These are implementation inputs, not changes to the agreed functional scope:
+The team must supply the demo inbox/folder, Dynamics read-only mapping and connection, SharePoint site/list IDs and fields, approved pilot users, Entra configuration, and a verified authenticated web-app-to-flow contract. Validate browser access and required platform entitlements before the live integration demo.
 
-- Dynamics dev environment URL and existing table/column mappings.
-- Mandatory Contact and Contact Relationship fields.
-- How relationships reference Property, Development, and Premises records.
-- Test mailbox, sample emails, and approved R&R users.
-- Power Automate entitlements, Outlook/Dataverse connections, Entra app registration, and static hosting.
-- Daily summary delivery time.
-- Secure web-app-to-flow triggering and persistent duplicate detection after staging records are deleted.
-- Treatment of rejected suggestions and retention of processing history.
+Implementation tasks are split into [frontend and integration](static-web-app-integration-workstream.md), [Power Automate](power-automate-workstream.md), [SharePoint](sharepoint-workstream.md), and [Dynamics read-only access](dataverse-workstream.md).
 
-The team will configure the required platform access. This proposal should be reconciled with the Product Director’s requirements before implementation.
-
-## 6. Frontend engineering approach
-
-The product team owns the Miro Process 1, Process 2, and Process 3 journeys. Rutesh's engineering contribution is the single-page UI that supports those journeys and connects to the team's Dataverse and Power Automate implementation. The frontend does not redefine the product flows.
-
-### Single-page UI
-
-Build with **HTML, CSS, and vanilla JavaScript modules**. A frontend framework is not required. Use Microsoft's MSAL.js authentication library for organisational sign-in.
-
-| Product process | UI responsibilities |
-|---|---|
-| Process 1: First-time inbox audit | Invitation landing, SSO, inbox connection status, start scan, progress, suggested contacts, accept/edit/reject, and completion |
-| Process 2: Weekly contact review | Digest landing, pending suggestions, accept all, edit details, reject with a reason, and submission results |
-| Process 3: Admin invitations and monitoring | Invite users, show invitation/connection/audit status, select users, and request reminders |
-
-Use a shared contact-review component for initial audits and weekly reviews. Provide clear loading, empty, validation, failure, and completion states. Selecting an action in an email opens the appropriate view; it does not perform an approval automatically.
-
-### Integration responsibilities
-
-- The UI displays data and submits user actions. Power Automate and Dataverse perform background scanning, invitations, reminders, and approved contact/relationship writes. Closing the browser must not stop an already-started scan.
-- Use MSAL.js with a single-tenant Microsoft Entra SPA registration and delegated Dataverse access. JavaScript calls the Dataverse Web API with the signed-in user's access token.
-- Agree a Dataverse request/status contract with the integration team for starting flows and reading their progress. Its storage mapping remains to be confirmed; this proposal does not approve additional custom tables.
-- Keep credentials, client secrets, and secret-bearing flow URLs out of browser code. Tenant ID, client ID, and environment URL can be configuration values.
-- Provide a clearly labelled **sample-data mode** so the UI can be developed and demonstrated before live integrations are available. Simulated sign-in and writes must not be presented as real authentication or Dynamics updates.
-
-### Hosting and SSO
-
-Use **Azure Static Web Apps Free** to host the static frontend, subject to team access and service limits. The Free hosting plan does not establish that Power Automate or Dataverse usage is free; those use the team's existing entitlements.
-
-Azure Static Web Apps' built-in custom authentication configuration requires Standard. For the Free hosting approach, implement Microsoft sign-in in the application using MSAL.js. The static application shell is publicly downloadable; business data and privileged actions must be protected by Entra application assignment, Dataverse permissions, and flow-side authorisation. Hiding an admin view in JavaScript is not an access-control boundary.
-
-Restrict live access to the selected R&R users. Register both the deployed application URL and the chosen localhost redirect URL in the Entra SPA registration.
-
-If cloud hosting is not ready, serve the same HTML, CSS, and JavaScript through a local HTTP server on a demo team member's machine. Live SSO, Dataverse, and flows still require internet access. Local sample data and locally available assets provide an offline demonstration fallback.
-
-### Frontend handoff dependencies
-
-The integration team must provide the Dataverse table/field mappings, allowed relationship values, request payloads for UI actions, status/error responses, and the Entra configuration. Build the UI against sample data while this contract is finalised, then connect the same views to the live services.
-
-Technical references:
-
-- [Microsoft: JavaScript SPA authentication and Dataverse Web API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/quick-start-js-spa)
-- [Microsoft: Azure Static Web Apps custom authentication](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom)
-- [Microsoft: Azure Static Web Apps FAQ](https://learn.microsoft.com/en-us/azure/static-web-apps/faq)
+This simplified engineering scope supersedes the earlier proposal's process screens and Dataverse staging design. The product team's [Miro board](https://miro.com/app/board/uXjVHgjEWWg=/) is unchanged; share this revision with the product team for alignment.
