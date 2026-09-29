@@ -14,16 +14,41 @@ This is a hackathon POC focused on a simple, demonstrable journey.
 
 ## 2. Agreed user journey
 
-1. An authorised R&R user signs into the static web app using organisational Microsoft SSO.
-2. Power Automate scans the configured inbox every **15 minutes**. The web app also provides **Scan now**.
-3. Sender and recipient information is captured. Missing contacts or relationships become staging records.
-4. The system uses explicit property references and relationship labels in sample emails to suggest matches.
-5. The PM receives a **daily Outlook summary**, grouped by property and sender, linking to the web app.
-6. In the web app, the PM reviews and corrects the suggested information, then approves selected records.
-7. Power Automate rechecks Dynamics and creates only the missing contact and relationship.
-8. The staging record is deleted only after all required Dynamics operations succeed. Failed records remain available for investigation and retry.
+Aligned with the Miro [MVP Scope](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685363306144) and the three process diagrams, reviewed on 29 September 2026.
 
-Approvals happen in the web app. The daily email provides a summary and review link.
+### A. First-time inbox audit
+
+1. An administrator adds an authorised R&R user's email address to the audit list and sends an invitation to the **Customer Capture** tool.
+2. The user follows the invitation, signs into the static web app using organisational Microsoft SSO, and connects their authorised Outlook inbox. The POC uses one configured demo inbox.
+3. The user starts the initial audit. The web app initiates Power Automate scanning, captures sender and recipient details, and compares sender email addresses with existing Dynamics contacts.
+4. The tool checks whether a new sender is relevant for a **customer** contact relationship before collecting further details. It proposes email, first name, last name, property/development, premises, and relationship type. For the POC, sample emails contain explicit property references and role labels; missing or uncertain values remain for user review.
+5. Suggestions are stored in the custom Dataverse staging table and displayed in the web app. If there are no suggestions, the audit can complete without creating records.
+6. The user reviews each suggestion and chooses **Accept**, **Edit**, or **Reject**. Editing returns the corrected details to review. Rejection requires a reason, which the platform records; rejected suggestions do not create Dynamics records.
+7. The platform writes only accepted contacts and relationships to Dynamics, rechecking for duplicates before each write. Successfully processed staging records are deleted; failed records remain available for retry. The initial audit is complete when all suggestions have been resolved and approved writes have succeeded.
+
+Source: [Process 1: First-time inbox audit](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369284605).
+
+### B. Ongoing capture and weekly review
+
+1. Power Automate continues capturing relevant email information into the staging table. **Scan timing is to be agreed**, as marked in Miro; the earlier 15-minute interval is a proposal, not a confirmed MVP requirement. **Scan now** remains the proposed manual control for the web app and hackathon demonstration.
+2. At the end of each week, staged suggestions are compared with Dynamics again to identify records that have already been created since capture and avoid duplicate suggestions.
+3. The user receives a **weekly Outlook digest** containing suggested contacts and contact relationships. Its **Accept all**, **Edit**, and **Reject** calls to action open the web app; following an email link does not itself approve or create records.
+4. In the web app, the user accepts all valid suggestions, edits and approves corrected suggestions, or rejects suggestions with reasons. Any undecided suggestions remain in the review queue until resolved.
+5. When the user completes the review, Power Automate rechecks Dynamics and creates only approved, missing contacts and relationships. The app distinguishes successful writes from failures; only successfully processed staging records are deleted.
+
+Source: [Process 2: Weekly contact review](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685369571110).
+
+### C. Admin invitations and monitoring
+
+An authorised administrator signs in, invites one or more R&R users by email, and monitors pending invitations, successful inbox connections, and completed audits. The administrator can select users and send reminders. This provides the usage-monitoring panel identified in the MVP scope; the POC demonstrates it with the configured demo user/inbox.
+
+Source: [Process 3: Admin invitations and monitoring](https://miro.com/app/board/uXjVHgjEWWg=/?moveToWidget=3458764685370564089).
+
+### Alignment points for team review
+
+- **Digest cadence:** Miro specifies a weekly digest. This journey supersedes the earlier daily-summary proposal; the other sections of this document have not been revised in this section-only update.
+- **Existing contacts:** The MVP Scope gateway ends processing when an email address already exists in Dynamics, while the initial-audit diagram includes missing contact relationships. The team needs to confirm whether suggesting a missing relationship for an existing contact is in the MVP. Existing contacts must not be recreated in either case.
+- **Rejections:** Miro requires a rejection reason to be recorded. The retention and repeat-suggestion rules remain to be agreed; rejection must not be treated as approval or successful creation.
 
 ## 3. Data and integrations
 
