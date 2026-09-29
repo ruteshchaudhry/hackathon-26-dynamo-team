@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dynamics 365 Design"
+  short_description: "Design Sales and Customer Service prototypes"
+  default_prompt: "Use $dynamics-365-design to create a clickable Dynamics 365 Customer Service case-management prototype."

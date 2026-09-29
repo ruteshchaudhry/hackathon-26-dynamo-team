@@ -1,0 +1,4 @@
+interface:
+  display_name: "Outlook Design"
+  short_description: "Design Outlook components and clickable prototypes"
+  default_prompt: "Use $outlook-design to design a clickable Outlook side panel for managing follow-up tasks from an email."
