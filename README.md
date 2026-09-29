@@ -1,6 +1,8 @@
-# R&R Inbox Contact Discovery — hackathon POC
+# Customer Capture — hackathon POC
 
-A simple contact-review app: Power Automate reads one Outlook inbox, checks live Dynamics data, and stores suggestions in SharePoint. An authorised R&R user reviews and approves suggestions in a static web app. Approved records go to a second SharePoint List to simulate adding contacts and relationships. Dynamics remains read-only.
+A simple contact-review app: Power Automate reads one Outlook inbox, checks live Dynamics data, and stores suggestions in SharePoint. An authorised pilot user reviews and approves suggestions in a static web app. Approved records go to a second SharePoint List to simulate adding contacts and relationships. Dynamics remains read-only.
+
+**Current build stage:** Use a manually triggered flow with [synthetic email JSON](setup/sample-email.json) until test-inbox access is available. Live Dynamics lookup, AI Builder name extraction and SharePoint staging have passed the missing-contact and repeated-scan tests. See [flow build status](setup/flow-build-status.md) for verified results and remaining work. No external mock email service is required; the demo must label its email source as simulated.
 
 ## Current scope and team ownership
 
@@ -12,7 +14,7 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 | [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
 | [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
 
-A local sample-data app is now available in `frontend/`. Microsoft SSO and the live services are not connected yet. Follow [the first-run setup guide](setup/first-run.md) to run the app and configure the services in order.
+A local sample-data app is now available in `frontend/`. The frontend is still in sample-data mode; its Microsoft SSO and live service adapters are not connected yet. Follow [the first-run setup guide](setup/first-run.md) to run the app and configure the services in order.
 
 ## Run the local demo
 
@@ -24,7 +26,7 @@ Open http://localhost:8000 and choose **Open sample-data demo**. It uses fiction
 
 Run `node --test tests/demo-store.test.mjs` for the store checks.
 
-The app palette follows [Rendall & Rittner’s website](https://www.rendallandrittner.co.uk/): deep blue, light blue, white, and a restrained magenta accent. Theme values live in `frontend/styles.css`.
+The app uses a generic slate and teal palette without organisation logos. Theme values live in `frontend/styles.css`. Configured tenant service URLs are retained for integration.
 
 ## Get started
 

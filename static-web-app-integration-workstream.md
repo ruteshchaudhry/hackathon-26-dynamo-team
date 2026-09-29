@@ -10,6 +10,8 @@ The `frontend/` folder contains the local sample-data review app with editing, a
 
 SharePoint columns are now configured and list IDs are recorded in frontend/config.js. Use [sharepoint-schema.json](setup/sharepoint-schema.json) for the live adapter's field mappings, including the three different internal names in AddedContacts. This configuration does not connect the demo app to SharePoint.
 
+The first cloud integration uses synthetic email JSON until inbox access is available. Keep **Scan sample emails** visibly distinct from a real inbox scan. A designer-run flow is acceptable during setup; app-triggered scanning remains incomplete until the authenticated action endpoint works.
+
 ## Ownership
 
 - **Rutesh:** Frontend, sign-in, list reads, flow action calls, result display, and end-to-end integration.
@@ -17,13 +19,13 @@ SharePoint columns are now configured and list IDs are recorded in frontend/conf
 - [Power Automate owner](power-automate-workstream.md): Outlook connection, live Dynamics queries, staging, validated edits/approvals, and cleanup.
 - [Dynamics owner](dataverse-workstream.md): Existing schema mappings and read-only access.
 
-Rutesh does not create Dataverse tables or implement cloud flows. Dynamics is queried live by the flows; the frontend does not need a Dynamics write connection.
+Rutesh may also implement the SharePoint/flow work for the hackathon. No Dataverse tables are created. Dynamics is queried live by the flows; the frontend does not need a Dynamics write connection.
 
 ## Build the simple journey
 
 | View/control | Behaviour |
 |---|---|
-| Login | Organisational Microsoft SSO for selected R&R users |
+| Login | Organisational Microsoft SSO for selected pilot users |
 | Pending review | Read permitted ContactStaging items; show pending, processing, and failed entries |
 | Scan now | Request the configured inbox scan and refresh the queue after a verified result |
 | Edit | Correct email, names, target property/development/premises, and relationship |
@@ -85,3 +87,7 @@ HTTP-trigger authentication and browser access are integration dependencies to p
 - [ ] Confirm no admin screens or Dynamics writes are included.
 
 References: [Microsoft Graph list items](https://learn.microsoft.com/en-us/graph/api/resources/listitem?view=graph-rest-1.0), [Power Automate authenticated triggers](https://learn.microsoft.com/en-us/power-automate/oauth-authentication), [Python static file server](https://docs.python.org/3/library/http.server.html).
+
+## Current matching rule
+
+Only missing sender emails enter review. An exact `Contact.emailaddress1` match exits the scan without new records, even if a relationship is missing. AI Builder entity extraction suggests name evidence; first/last-name matches are advisory and must remain reviewable. The current local fixtures still include the earlier relationship-gap example; align those fixtures when implementing the live adapter.

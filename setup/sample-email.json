@@ -1,0 +1,10 @@
+{
+  "id": "hackathon-sample-001",
+  "sourceMailbox": "mock-inbox@example.com",
+  "from": "alex.morgan@example.com",
+  "senderName": "Alex Morgan",
+  "to": ["pm.demo@example.com"],
+  "receivedAt": "2026-09-29T09:00:00Z",
+  "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+  "body": "Synthetic hackathon email. FirstName: Alex\nLastName: Morgan\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+}

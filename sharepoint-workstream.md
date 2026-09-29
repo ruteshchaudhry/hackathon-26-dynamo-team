@@ -4,7 +4,7 @@
 
 **Consumers:** Power Automate owner and Rutesh.
 
-**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; flow/API tests and pilot permissions remain pending. No contact records inserted during setup.
+**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; the live scan created one synthetic Pending Alex Morgan item and a repeat scan skipped creation. Browser API integration and pilot permissions remain pending.
 
 ## Configured lists
 
@@ -27,7 +27,7 @@ CandidateKey is required and unique in both lists. SourceStagingId is required a
 
 RecipientAddresses and EvidenceExcerpt are plain multiline text; store recipients as a JSON array of strings. ReceivedAt and ApprovedAt include time; send ISO 8601 UTC values. Other text fields, including the existing ErrorMessage, are single-line text (255 characters). Keep errors concise. Validate key and identifier lengths; never silently truncate identity keys. Agree a deterministic compact key encoding before implementing the flows if the full business/source key exceeds 255 characters.
 
-List configuration is complete; runtime duplicate rejection, pilot access, API reads, and approval retry behaviour have not yet been tested. Existing site permissions were not changed.
+List configuration and sequential duplicate scan checks are verified. Concurrent unique-key rejection, pilot access, browser API reads, and approval retries remain untested. Existing site permissions were not changed.
 
 | List | Purpose |
 |---|---|
@@ -50,9 +50,9 @@ The names below describe the contract; use the verified inventory above for actu
 | SourceMailbox, SourceMessageId, RecipientAddresses | Text; provenance, with recipients stored consistently |
 | ReceivedAt, Subject, EvidenceExcerpt | Date/time and text; short evidence only |
 | AssignedReviewerId | Trusted Entra user identity permitted to review the item |
-| CandidateKey | Flow-generated stable key for normalised email + complete target identity + role |
+| CandidateKey | For the current contact-only scan: normalised sender email, maximum 255 characters |
 
-CandidateKey must include all target references needed by the real relationship model. Incomplete suggestions need a provisional key derived from mailbox/message/candidate identity; resolve the final business key before approval. Retain source identity separately so re-reading the same message does not reproduce an edited suggestion.
+For the current contact-only scope, CandidateKey is the normalised sender email, so repeated messages for one missing contact reuse one pending suggestion. Preserve source mailbox/message separately so an edited email does not reproduce the original suggestion. Property/role fields remain available for PM review; existing-contact relationship-gap ingestion is outside scope. The list column's generic description predates this narrower rule; flow logic follows this document.
 
 ## ContactStaging fields
 
@@ -75,14 +75,14 @@ Use the built-in list item ID and modification/version metadata. Pending entries
 | SimulatedRelationshipCreated | Yes/no; false when the relationship already exists |
 | ApprovedBy, ApprovedAt | Validated reviewer identity and approval time |
 
-Each item represents an approved contact-property-role outcome. Multiple rows may share the same real or demo contact identity. These are not multiple new people. The UI labels AlreadyExists outcomes separately from simulated additions.
+For the current contact-only MVP, each item represents one approved result per normalised email, retaining the reviewed target/role fields. Multiple relationship outcomes for an existing contact are outside this scan scope. The UI labels AlreadyExists outcomes separately from simulated additions.
 
 Enforce unique final CandidateKey values in AddedContacts and a unique SourceStagingId where supported by the chosen column types. Test these constraints. Use the same candidate key in staging to prevent repeated pending suggestions. Preserve approved results for the demo; do not delete them during staging cleanup.
 
 ## Access and integration
 
 - [ ] Grant the automation connection the list read/write permissions needed for processing.
-- [ ] Grant selected R&R reviewers read access to their permitted staging and outcome records; normal reviewers do not write directly to AddedContacts.
+- [ ] Grant selected pilot reviewers read access to their permitted staging and outcome records; normal reviewers do not write directly to AddedContacts.
 - [ ] Enforce reviewer/item access in SharePoint and the flow action, not only through frontend filters. For one shared demo queue, document exactly which pilot users may see it.
 - [ ] Coordinate delegated API permissions and tenant consent for the frontend's Microsoft Graph list reads.
 - [ ] Supply example JSON records and the field/status mapping to Rutesh.

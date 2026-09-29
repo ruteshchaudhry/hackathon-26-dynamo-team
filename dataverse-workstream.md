@@ -12,8 +12,8 @@ Power Automate queries Dynamics at scan time and again during approval. Approved
 
 ## Actions
 
-- [ ] Confirm the development environment URL and a connection identity with the required read privileges.
-- [ ] Map Contact email, first/last name, primary key, and Web API entity-set names.
+- [x] Verify the development environment URL and connection through a successful contact read.
+- [x] Verify Contact entity set `contacts` and fields `contactid,firstname,lastname,emailaddress1` with a live read.
 - [ ] Map Contact Relationship, its contact reference, target references, and role values.
 - [ ] Map existing Property/Development and Premises IDs, names, explicit identifiers, and their relationships.
 - [ ] Explain whether a relationship requires multiple target references; do not replace the actual model with an assumed generic property ID.
@@ -23,16 +23,17 @@ Power Automate queries Dynamics at scan time and again during approval. Approved
 
 ## Matching contract
 
-Normalise email addresses for comparison. Return all matching contacts; multiple matches require review. Do not select an arbitrary contact or merge contacts automatically.
+**Confirmed by Rutesh:** match the sender email against `contact.emailaddress1` first. The initial live query uses entity set `contacts`, selects `contactid,firstname,lastname,emailaddress1`, and is limited to two rows. Sender email is trimmed/lowercased and apostrophes escaped in the OData value.
 
-Check relationships using the resolved contact ID, actual target IDs/types, and role. An existing contact does not imply that every property relationship exists. Property matches must use the sample's explicit identifiers; unknown or ambiguous targets stay unresolved.
+- One or more exact email matches: exit the scan successfully with no staging or relationship addition.
+- Zero exact email matches: proceed to AI-assisted extraction, duplicate checks and pending review.
+- Lookup failure: fail visibly; never treat it as zero matches.
 
-Provide the flow owner with read results that distinguish:
+AI Builder Extract standard entities supplies name evidence. Proposed `firstname`/`lastname` candidate queries are advisory, bounded and only needed for missing-email cases. Name-only matches must never count as a confirmed identity or suppress staging. Do not write model-generated OData directly into a query.
 
-- Contact missing: simulate a new contact and required relationship after approval.
-- Contact present, relationship missing: reuse its ID and simulate only the missing relationship.
-- Contact and relationship present: no new suggestion, or an AlreadyExists outcome if discovered during approval.
-- Ambiguous match or failed lookup: require correction or retry, without assuming absence.
+Property, development, premises and role mapping is still required for reviewing new contacts. Existing-contact relationship discovery is outside the current scope.
+
+Verified development organisation from the successful contact lookup: `https://rendallandrittner-predev.crm11.dynamics.com`. No Dynamics business records were modified.
 
 ## Handoff and validation
 

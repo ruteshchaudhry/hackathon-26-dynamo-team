@@ -8,24 +8,28 @@
 
 Use the [SharePoint field contract](sharepoint-workstream.md), [Dynamics read mappings](dataverse-workstream.md), and [frontend contract](static-web-app-integration-workstream.md).
 
-The SharePoint columns are configured. Use the actual list IDs and internal field names in [sharepoint-schema.json](setup/sharepoint-schema.json); AddedContacts uses `TargetID`, `DevelpmentId`, and `PremiseId` internally. Do not recreate the lists. The next milestone is the manual five-message scan in [first-run setup](setup/first-run.md#3-prove-one-manual-scan-flow).
+The SharePoint columns are configured. Use the actual list IDs and internal field names in [sharepoint-schema.json](setup/sharepoint-schema.json); AddedContacts uses `TargetID`, `DevelpmentId`, and `PremiseId` internally. Do not recreate the lists. The next milestone is the manual five-message scan in [first-run setup](setup/first-run.md#3-manual-scan-flow-first-path-verified).
 
-1. Configure `testpmdyno-mine@outlook.com` using the Outlook.com connector and read-only Dynamics access in environment `ae00c6cc-145f-41ea-bf30-1f0979a559c6`. Verify environment connector policy permits this combination.
-2. Prove a bounded scan of five synthetic emails into ContactStaging.
+1. Start with the manually triggered **Customer Capture - Scan sample emails** flow in the existing **Odevo Hackathon 2026** solution in environment `ae00c6cc-145f-41ea-bf30-1f0979a559c6` (Pre Dev). Use a Compose action containing [sample-email.json](setup/sample-email.json), so mailbox access is not a dependency.
+2. Prove one synthetic email through live Dynamics lookups into ContactStaging, then expand to a bounded batch of five. Mock email input does not mean mock CRM results.
 3. Prove edit/approval processing into AddedContacts, including retry and cleanup.
 4. Connect authenticated browser actions and verify the complete demo journey.
 
 The Outlook connection is configured by the team. Signing into the web app does not automatically connect the user's mailbox. There are no invitation, reminder, digest, or admin flows in this scope.
 
+When inbox access arrives, replace the sample input with Outlook.com Get emails (V2) for `testpmdyno-mine@outlook.com`. Verify connector policy then. Map each real message to the same input shape and retain its real source identity; never reuse the sample message ID for live mail. `DEMO-001` and `Resident` in the fixture are unverified reference text, not real Dynamics IDs or role codes. Resolve them through the actual schema or leave the suggestion incomplete for review.
+
+**Build status:** [Verified live flow and remaining work](setup/flow-build-status.md). Checklists below include unfinished end-to-end requirements.
+
 ## Flow 1: Scan inbox
 
 - [ ] Expose Scan now through the verified authenticated action contract below; use a manual designer run while building it.
-- [ ] Restrict the flow to the configured demo mailbox/folder and approved R&R callers.
+- [ ] Restrict the flow to the configured demo mailbox/folder and approved pilot callers.
 - [ ] Use Outlook.com Get emails (V2) for a bounded sample batch, including read messages. Capture sender, recipients, mailbox, source message ID, received time, subject, and a short excerpt.
-- [ ] Start with explicit sample property identifiers and role labels. Once AI Builder access/capacity is verified, use the [draft extraction prompt](setup/email-extraction-prompt.md), validate its structured output, and resolve suggestions with API queries. Filter irrelevant/internal messages using agreed sample rules; do not treat every sender as a customer.
-- [ ] Query live Dynamics contacts and target records, then check the actual contact-target-role relationship. A failed query is an error, not proof of absence.
-- [ ] Check AddedContacts and ContactStaging for both business and source keys before adding a suggestion.
-- [ ] Stage only missing contact/relationship work. Preserve uncertain fields for review rather than inventing them.
+- [ ] Start with explicit sample property identifiers and role labels. Use the available AI Builder **Extract standard entities** action for name evidence. Run a prompt is not listed in Pre Dev; Azure OpenAI is not the selected route. See [AI extraction guidance](setup/email-extraction-prompt.md). Filter irrelevant/internal messages using agreed sample rules; do not treat every sender as a customer.
+- [ ] Query `contacts` using `emailaddress1`, then branch on `length(body('List_rows')?['value'])`. A failed query is an error, not proof of absence. Existing-contact relationship gaps are outside the current scope.
+- [ ] Check AddedContacts and ContactStaging by normalised sender email and source mailbox/message before adding a suggestion. For this contact-only stage, CandidateKey is the normalised sender email (validate length <= 255); reuse the same key in both lists.
+- [ ] Stage only senders absent from `Contact.emailaddress1`. If any exact email match exists, terminate successfully before AI or SharePoint writes. Preserve uncertain names/target/role for review.
 - [ ] Return counts for scanned messages, new suggestions, skipped candidates, and errors. Describe this as a sample batch scan, not a complete mailbox audit.
 
 Serialise scan runs for this one-inbox POC and use unique keys to handle repeated triggers. Query approved demo data as well as Dynamics on every scan because Dynamics never receives the simulated additions.
@@ -41,9 +45,9 @@ The authenticated action receives a staging item ID, its expected version, and o
 For approval, process one item at a time for the POC:
 
 1. Mark the validated suggestion Processing and preserve the approved values and trusted reviewer identity.
-2. Query live Dynamics. If the contact exists, reuse its ID. If absent, reuse an existing demo contact identity for the email or allocate one. Do not insert a contact in Dynamics.
-3. Check the complete contact-target-role key in Dynamics and AddedContacts. If a demo result already exists, reuse it. Otherwise write the approved outcome to AddedContacts with the correct simulated-contact/relationship flags.
-4. If Dynamics now contains everything, record an AlreadyExists outcome with both creation flags false, so the UI can explain why no addition was needed.
+2. Recheck live Dynamics by exact email. If found, record AlreadyExists with the actual contact ID and both creation flags false; do not simulate a missing relationship.
+3. If absent, check AddedContacts by CandidateKey and SourceStagingId and reuse any durable result. Otherwise allocate a demo identity and save one SimulatedAddition outcome with the reviewed target/role and appropriate simulation flags. Do not insert a Dynamics contact.
+4. Persist the approved result only once; list uniqueness and a re-read handle competing requests.
 5. Confirm the durable result, retain its item ID, and only then delete the staging item.
 6. Return the result item ID and accurate outcome. If deletion fails, retain CleanupPending and the result ID; retry cleanup without creating another result.
 
@@ -65,7 +69,7 @@ If the browser trigger is not ready, a clearly labelled designer-run scan can de
 
 - [ ] Provide connection setup, list mappings, action URLs/auth configuration, sample payloads, and flow exports where available.
 - [ ] Verify scan → review → approve → AddedContacts → staging cleanup from the UI.
-- [ ] Verify an existing contact with a missing relationship and one contact linked to multiple properties.
+- [ ] Verify an exact-email match exits without staging, AI processing, or relationship additions.
 - [ ] Verify repeated scans, double approvals, stale edits, response loss, failed saves, and cleanup retries.
 - [ ] Verify a Dynamics lookup failure does not create a false missing-contact result.
 - [ ] Verify all Dynamics operations are reads and unauthorised actions are denied.
