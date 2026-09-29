@@ -116,3 +116,47 @@ These are implementation inputs, not changes to the agreed functional scope:
 - Treatment of rejected suggestions and retention of processing history.
 
 The team will configure the required platform access. This proposal should be reconciled with the Product Director’s requirements before implementation.
+
+## 6. Frontend engineering approach
+
+The product team owns the Miro Process 1, Process 2, and Process 3 journeys. Rutesh's engineering contribution is the single-page UI that supports those journeys and connects to the team's Dataverse and Power Automate implementation. The frontend does not redefine the product flows.
+
+### Single-page UI
+
+Build with **HTML, CSS, and vanilla JavaScript modules**. A frontend framework is not required. Use Microsoft's MSAL.js authentication library for organisational sign-in.
+
+| Product process | UI responsibilities |
+|---|---|
+| Process 1: First-time inbox audit | Invitation landing, SSO, inbox connection status, start scan, progress, suggested contacts, accept/edit/reject, and completion |
+| Process 2: Weekly contact review | Digest landing, pending suggestions, accept all, edit details, reject with a reason, and submission results |
+| Process 3: Admin invitations and monitoring | Invite users, show invitation/connection/audit status, select users, and request reminders |
+
+Use a shared contact-review component for initial audits and weekly reviews. Provide clear loading, empty, validation, failure, and completion states. Selecting an action in an email opens the appropriate view; it does not perform an approval automatically.
+
+### Integration responsibilities
+
+- The UI displays data and submits user actions. Power Automate and Dataverse perform background scanning, invitations, reminders, and approved contact/relationship writes. Closing the browser must not stop an already-started scan.
+- Use MSAL.js with a single-tenant Microsoft Entra SPA registration and delegated Dataverse access. JavaScript calls the Dataverse Web API with the signed-in user's access token.
+- Agree a Dataverse request/status contract with the integration team for starting flows and reading their progress. Its storage mapping remains to be confirmed; this proposal does not approve additional custom tables.
+- Keep credentials, client secrets, and secret-bearing flow URLs out of browser code. Tenant ID, client ID, and environment URL can be configuration values.
+- Provide a clearly labelled **sample-data mode** so the UI can be developed and demonstrated before live integrations are available. Simulated sign-in and writes must not be presented as real authentication or Dynamics updates.
+
+### Hosting and SSO
+
+Use **Azure Static Web Apps Free** to host the static frontend, subject to team access and service limits. The Free hosting plan does not establish that Power Automate or Dataverse usage is free; those use the team's existing entitlements.
+
+Azure Static Web Apps' built-in custom authentication configuration requires Standard. For the Free hosting approach, implement Microsoft sign-in in the application using MSAL.js. The static application shell is publicly downloadable; business data and privileged actions must be protected by Entra application assignment, Dataverse permissions, and flow-side authorisation. Hiding an admin view in JavaScript is not an access-control boundary.
+
+Restrict live access to the selected R&R users. Register both the deployed application URL and the chosen localhost redirect URL in the Entra SPA registration.
+
+If cloud hosting is not ready, serve the same HTML, CSS, and JavaScript through a local HTTP server on a demo team member's machine. Live SSO, Dataverse, and flows still require internet access. Local sample data and locally available assets provide an offline demonstration fallback.
+
+### Frontend handoff dependencies
+
+The integration team must provide the Dataverse table/field mappings, allowed relationship values, request payloads for UI actions, status/error responses, and the Entra configuration. Build the UI against sample data while this contract is finalised, then connect the same views to the live services.
+
+Technical references:
+
+- [Microsoft: JavaScript SPA authentication and Dataverse Web API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/quick-start-js-spa)
+- [Microsoft: Azure Static Web Apps custom authentication](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom)
+- [Microsoft: Azure Static Web Apps FAQ](https://learn.microsoft.com/en-us/azure/static-web-apps/faq)
