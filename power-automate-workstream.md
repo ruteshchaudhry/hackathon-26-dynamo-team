@@ -8,6 +8,8 @@
 
 Use the [SharePoint field contract](sharepoint-workstream.md), [Dynamics read mappings](dataverse-workstream.md), and [frontend contract](static-web-app-integration-workstream.md).
 
+The SharePoint columns are configured. Use the actual list IDs and internal field names in [sharepoint-schema.json](setup/sharepoint-schema.json); AddedContacts uses `TargetID`, `DevelpmentId`, and `PremiseId` internally. Do not recreate the lists. The next milestone is the manual five-message scan in [first-run setup](setup/first-run.md#3-prove-one-manual-scan-flow).
+
 1. Configure `testpmdyno-mine@outlook.com` using the Outlook.com connector and read-only Dynamics access in environment `ae00c6cc-145f-41ea-bf30-1f0979a559c6`. Verify environment connector policy permits this combination.
 2. Prove a bounded scan of five synthetic emails into ContactStaging.
 3. Prove edit/approval processing into AddedContacts, including retry and cleanup.

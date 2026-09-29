@@ -4,11 +4,30 @@
 
 **Consumers:** Power Automate owner and Rutesh.
 
-**Status:** Proposed field contract to configure and verify; no lists are created by this document.
+**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; flow/API tests and pilot permissions remain pending. No contact records inserted during setup.
 
-## Create two lists
+## Configured lists
 
-Create **ContactStaging** and **AddedContacts** in https://randrltd.sharepoint.com/sites/PRJ_Nabo/. Check for existing lists before creating them. Share their site/list IDs and actual internal column names with both implementation owners. These are SharePoint Lists, not Excel files in a document library.
+Use **ContactStaging** and **AddedContacts** in https://randrltd.sharepoint.com/sites/PRJ_Nabo/ (site display name: PRJ_Dynamo Shared). These are SharePoint Lists, not Excel files in a document library. The verified IDs and complete internal-name/type inventory are in [sharepoint-schema.json](setup/sharepoint-schema.json).
+
+- [ContactStaging](https://randrltd.sharepoint.com/sites/PRJ_Nabo/Lists/ContactStaging/AllItems.aspx): `d2285f11-09dc-462b-b692-e3111a40c23f`.
+- [AddedContacts](https://randrltd.sharepoint.com/sites/PRJ_Nabo/Lists/AddedContacts/AllItems.aspx): `85fc11a7-c916-4af3-b25e-1b7346aba98a`.
+
+### Integration details verified during setup
+
+AddedContacts has three corrected display labels whose existing internal names remain different. Map them explicitly in API payloads:
+
+| Contract/display name | AddedContacts internal name | ContactStaging internal name |
+|---|---|---|
+| TargetId | TargetID | TargetId |
+| DevelopmentId | DevelpmentId | DevelopmentId |
+| PremisesId | PremiseId | PremisesId |
+
+CandidateKey is required and unique in both lists. SourceStagingId is required and unique in AddedContacts. Status defaults to Pending. Outcome is required with choices SimulatedAddition and AlreadyExists; both simulated-creation flags default to No.
+
+RecipientAddresses and EvidenceExcerpt are plain multiline text; store recipients as a JSON array of strings. ReceivedAt and ApprovedAt include time; send ISO 8601 UTC values. Other text fields, including the existing ErrorMessage, are single-line text (255 characters). Keep errors concise. Validate key and identifier lengths; never silently truncate identity keys. Agree a deterministic compact key encoding before implementing the flows if the full business/source key exceeds 255 characters.
+
+List configuration is complete; runtime duplicate rejection, pilot access, API reads, and approval retry behaviour have not yet been tested. Existing site permissions were not changed.
 
 | List | Purpose |
 |---|---|
@@ -19,7 +38,7 @@ Use SharePoint as the single demo store. CSV and Excel are not required. No cust
 
 ## Shared contact and source fields
 
-The names below describe the contract; agree actual internal names and types before implementation.
+The names below describe the contract; use the verified inventory above for actual internal names and types.
 
 | Fields | Suggested type / meaning |
 |---|---|

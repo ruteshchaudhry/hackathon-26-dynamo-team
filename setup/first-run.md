@@ -29,16 +29,16 @@ Use the R&R work identity for Power Platform, Dynamics, and SharePoint. Use the 
 
 The test address uses the **Outlook.com** connector, whose read action is **Get emails (V2)**. An organisational Exchange mailbox would use **Office 365 Outlook** instead. Verify that the environment allows Outlook.com to be combined with SharePoint/Dataverse under its connector policies. If blocked, ask the environment owner for an approved organisational test mailbox; do not work around the policy.
 
-## 2. Create the SharePoint Lists
+## 2. SharePoint Lists: schema configured
 
-First check Site contents for existing lists with the agreed names. Create missing lists only:
+The existing lists were reused and missing columns added on 29 September 2026:
 
 - `ContactStaging`
 - `AddedContacts`
 
-Use the column definitions in [SharePoint workstream](../sharepoint-workstream.md). Create column internal names without spaces where practical and record the actual names, types, choice values, site ID, and list IDs. Keep the default Title column optional, or populate it with a concise contact/property label in every create action.
+Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs are also recorded in frontend/config.js; the Graph site ID remains to be obtained. AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
 
-Configure candidate/source uniqueness and approved-user access with the site owner. Verify access using a synthetic test record. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
+CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Approved-user permissions and API access still need configuration/testing with the site owner. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
 
 ## 3. Prove one manual scan flow
 
@@ -73,7 +73,8 @@ Rutesh then replaces the demo adapter with live reads/actions and adds MSAL sign
 
 - [ ] Both browser sign-ins completed and correct tenant/environment verified.
 - [ ] Outlook.com, SharePoint, and Dataverse connections tested together.
-- [ ] SharePoint Lists and their schema confirmed.
+- [x] SharePoint Lists and their column schema confirmed.
+- [ ] SharePoint pilot permissions and runtime duplicate constraints tested.
 - [ ] One real scan creates one suggestion without duplicates.
 - [ ] AI availability/capacity checked and prompt tested, if available.
 - [ ] Approval saves to AddedContacts and cleans staging safely.

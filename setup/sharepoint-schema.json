@@ -1,0 +1,376 @@
+{
+  "verifiedOn": "2026-09-29",
+  "siteUrl": "https://randrltd.sharepoint.com/sites/PRJ_Nabo/",
+  "siteDisplayName": "PRJ_Dynamo Shared",
+  "verification": "Column names and types read from SharePoint List Settings; constraints configured and inspected in UI. No live flow/API record tests yet.",
+  "lists": {
+    "ContactStaging": {
+      "id": "d2285f11-09dc-462b-b692-e3111a40c23f",
+      "fields": [
+        {
+          "displayName": "Title",
+          "internalName": "Title",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "Status",
+          "internalName": "Status",
+          "type": "Choice"
+        },
+        {
+          "displayName": "ErrorMessage",
+          "internalName": "ErrorMessage",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "ResultItemId",
+          "internalName": "ResultItemId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "Email",
+          "internalName": "Email",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "NormalizedEmail",
+          "internalName": "NormalizedEmail",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "FirstName",
+          "internalName": "FirstName",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "LastName",
+          "internalName": "LastName",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetType",
+          "internalName": "TargetType",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetId",
+          "internalName": "TargetId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetLabel",
+          "internalName": "TargetLabel",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RelationshipCode",
+          "internalName": "RelationshipCode",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RelationshipLabel",
+          "internalName": "RelationshipLabel",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "DevelopmentId",
+          "internalName": "DevelopmentId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "PropertyId",
+          "internalName": "PropertyId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "PremisesId",
+          "internalName": "PremisesId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "ExistingDynamicsContactId",
+          "internalName": "ExistingDynamicsContactId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "SourceMailbox",
+          "internalName": "SourceMailbox",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "SourceMessageId",
+          "internalName": "SourceMessageId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "Subject",
+          "internalName": "Subject",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "AssignedReviewerId",
+          "internalName": "AssignedReviewerId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "CandidateKey",
+          "internalName": "CandidateKey",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RecipientAddresses",
+          "internalName": "RecipientAddresses",
+          "type": "Multiple lines of text"
+        },
+        {
+          "displayName": "EvidenceExcerpt",
+          "internalName": "EvidenceExcerpt",
+          "type": "Multiple lines of text"
+        },
+        {
+          "displayName": "ReceivedAt",
+          "internalName": "ReceivedAt",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "Modified",
+          "internalName": "Modified",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "Created",
+          "internalName": "Created",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "Created By",
+          "internalName": "Author",
+          "type": "Person or Group"
+        },
+        {
+          "displayName": "Modified By",
+          "internalName": "Editor",
+          "type": "Person or Group"
+        }
+      ],
+      "constraints": {
+        "CandidateKey": {
+          "required": true,
+          "unique": true,
+          "maxLength": 255
+        },
+        "Status": {
+          "choices": [
+            "Pending",
+            "Processing",
+            "CleanupPending",
+            "Failed"
+          ],
+          "default": "Pending"
+        }
+      }
+    },
+    "AddedContacts": {
+      "id": "85fc11a7-c916-4af3-b25e-1b7346aba98a",
+      "fields": [
+        {
+          "displayName": "Title",
+          "internalName": "Title",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "Email",
+          "internalName": "Email",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "NormalizedEmail",
+          "internalName": "NormalizedEmail",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "FirstName",
+          "internalName": "FirstName",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "LastName",
+          "internalName": "LastName",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetType",
+          "internalName": "TargetType",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetId",
+          "internalName": "TargetID",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "TargetLabel",
+          "internalName": "TargetLabel",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "DevelopmentId",
+          "internalName": "DevelpmentId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "PropertyId",
+          "internalName": "PropertyId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "PremisesId",
+          "internalName": "PremiseId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RelationshipCode",
+          "internalName": "RelationshipCode",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RelationshipLabel",
+          "internalName": "RelationshipLabel",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "ExistingDynamicsContactId",
+          "internalName": "ExistingDynamicsContactId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "SourceMailbox",
+          "internalName": "SourceMailbox",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "SourceMessageId",
+          "internalName": "SourceMessageId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "Subject",
+          "internalName": "Subject",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "AssignedReviewerId",
+          "internalName": "AssignedReviewerId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "DemoContactId",
+          "internalName": "DemoContactId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "ApprovedBy",
+          "internalName": "ApprovedBy",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "CandidateKey",
+          "internalName": "CandidateKey",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "SourceStagingId",
+          "internalName": "SourceStagingId",
+          "type": "Single line of text"
+        },
+        {
+          "displayName": "RecipientAddresses",
+          "internalName": "RecipientAddresses",
+          "type": "Multiple lines of text"
+        },
+        {
+          "displayName": "EvidenceExcerpt",
+          "internalName": "EvidenceExcerpt",
+          "type": "Multiple lines of text"
+        },
+        {
+          "displayName": "ReceivedAt",
+          "internalName": "ReceivedAt",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "ApprovedAt",
+          "internalName": "ApprovedAt",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "SimulatedContactCreated",
+          "internalName": "SimulatedContactCreated",
+          "type": "Yes/No"
+        },
+        {
+          "displayName": "SimulatedRelationshipCreated",
+          "internalName": "SimulatedRelationshipCreated",
+          "type": "Yes/No"
+        },
+        {
+          "displayName": "Outcome",
+          "internalName": "Outcome",
+          "type": "Choice"
+        },
+        {
+          "displayName": "Modified",
+          "internalName": "Modified",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "Created",
+          "internalName": "Created",
+          "type": "Date and Time"
+        },
+        {
+          "displayName": "Created By",
+          "internalName": "Author",
+          "type": "Person or Group"
+        },
+        {
+          "displayName": "Modified By",
+          "internalName": "Editor",
+          "type": "Person or Group"
+        }
+      ],
+      "constraints": {
+        "CandidateKey": {
+          "required": true,
+          "unique": true,
+          "maxLength": 255
+        },
+        "SourceStagingId": {
+          "required": true,
+          "unique": true,
+          "maxLength": 255
+        },
+        "Outcome": {
+          "required": true,
+          "choices": [
+            "SimulatedAddition",
+            "AlreadyExists"
+          ]
+        },
+        "SimulatedContactCreated": {
+          "default": false
+        },
+        "SimulatedRelationshipCreated": {
+          "default": false
+        }
+      }
+    }
+  },
+  "notes": [
+    "RecipientAddresses stores a JSON array in plain multiline text.",
+    "Use ISO 8601 UTC inputs for ReceivedAt and ApprovedAt; both include time.",
+    "Single-line text is limited to 255 characters. Validate keys and identifiers; do not silently truncate them.",
+    "AddedContacts display labels were corrected; original internal names TargetID, DevelpmentId and PremiseId remain.",
+    "Pilot permissions, Graph site ID, consent, live authentication and flow connections remain to be configured and tested."
+  ]
+}

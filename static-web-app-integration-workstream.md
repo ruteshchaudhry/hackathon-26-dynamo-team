@@ -8,6 +8,8 @@
 
 The `frontend/` folder contains the local sample-data review app with editing, approval, search, repeat-scan protection, and added contacts. It uses browser storage and clearly identifies simulated operations. Live SSO and service adapters remain to be built. Follow [first-run setup](setup/first-run.md).
 
+SharePoint columns are now configured and list IDs are recorded in frontend/config.js. Use [sharepoint-schema.json](setup/sharepoint-schema.json) for the live adapter's field mappings, including the three different internal names in AddedContacts. This configuration does not connect the demo app to SharePoint.
+
 ## Ownership
 
 - **Rutesh:** Frontend, sign-in, list reads, flow action calls, result display, and end-to-end integration.
