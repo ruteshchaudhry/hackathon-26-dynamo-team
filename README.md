@@ -14,11 +14,11 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 | [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
 | [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
 
-A local sample-data app is now available in `frontend/`. The frontend is still in sample-data mode; its new Entra/Graph adapter awaits approved tenant configuration and live verification. Approval will write corrected contacts directly to AddedContacts, then remove staging and refresh the shared count. No second flow is needed. See [the access plan](setup/entra-access.md). Follow [the first-run setup guide](setup/first-run.md) to run the app and configure the services in order.
+The hosted frontend now uses real organisational Entra sign-in. The two selected-list grants are the remaining blocker to shared records; approval will save corrected contacts directly to AddedContacts, then remove staging and refresh the count. No second flow is needed. See [the access setup](setup/entra-access.md).
 
 ## Hosted demo
 
-[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; current sample-data mode still uses each browser’s local storage. See [deployment and redeployment notes](setup/azure-static-web-app.md).
+[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; Microsoft sign-in is enabled; SharePoint app grants are pending. See [deployment and redeployment notes](setup/azure-static-web-app.md).
 
 ## Run the local demo
 
@@ -26,7 +26,7 @@ A local sample-data app is now available in `frontend/`. The frontend is still i
 python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
 ```
 
-Open http://localhost:8000 and choose **Open sample-data demo**. It uses fictional records stored only in that browser. Review, edit, approve, and rescan sample suggestions; approvals appear in Added contacts. No real mailbox or Dynamics records are changed.
+For offline sample-data development, set `mode` to `demo` in frontend/config.js locally (do not deploy that change). Open http://localhost:8000 and choose **Open sample-data demo**. It uses fictional records stored only in that browser. Review, edit, approve, and rescan sample suggestions; approvals appear in Added contacts. No real mailbox or Dynamics records are changed.
 
 Run `node --test tests/*.test.mjs` for the store checks.
 

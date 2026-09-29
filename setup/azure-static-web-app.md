@@ -10,7 +10,7 @@ Verified on 29 September 2026: all app assets return HTTP 200 with expected MIME
 
 Only `frontend/` is published. It contains static HTML, CSS, JavaScript and synthetic fixtures. The app retains the deep blue/light blue/magenta palette without organisation names or logos. No Python server is needed in Azure. Hash navigation works without server-side route rewrites, and `staticwebapp.config.json` explicitly serves `.mjs` as JavaScript.
 
-The current site is an anonymous sample-data demo. Records are stored separately per browser and origin. It does not yet read live SharePoint records, sign in through Entra, or invoke Power Automate. Hosting does not change those integration limits. Never enter real customer information into this sample-data version.
+The current site uses real organisational Entra sign-in. Hosted sign-in is verified. SharePoint reads and approval remain blocked until the two selected-list grants are applied; the UI reports Access denied rather than displaying fixture records. Power Automate still runs separately in the designer.
 
 ## Redeploy frontend changes
 
@@ -30,9 +30,9 @@ The Bicep template contains one Free Static Web App. Use **Incremental** mode wi
 az deployment group create --subscription 36a7b914-f275-4782-a9ea-bda7362ff589 --resource-group rg-portalapp-dev-uks --name customer-capture-20e0 --template-file infra/main.bicep --parameters @infra/main.parameters.json --mode Incremental
 ```
 
-## Next: activate shared data and organisational sign-in
+## Remaining: grant access to shared records
 
-The Entra/Graph adapter is prepared locally and tested with simulated API responses. The deployed site remains in sample-data mode until the [specific access setup](entra-access.md) is approved and configured. Then set the client ID and live mode, redeploy and verify real reads, corrections, direct AddedContacts creation, staging cleanup and count. No approval flow is needed. The ingestion flow remains designer-run; use Refresh records in the app.
+Apply the two exact grants in [Entra access setup](entra-access.md), then refresh the hosted app and verify real reads, corrected approval, staging cleanup and the count. No approval flow is needed. No localhost sign-in redirect is configured.
 
 ## Remove only this demo when finished
 

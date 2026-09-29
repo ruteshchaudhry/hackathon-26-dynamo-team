@@ -1,42 +1,60 @@
-# Customer Capture: proposed Entra and SharePoint access
+# Customer Capture: Entra and SharePoint access
 
-**Status:** code prepared, organisational changes blocked pending explicit approval. No app registration, app consent, list app grant or pilot assignment has been created in this task. Automatic approval review rejected the initial registration request because those access changes and redirect scopes had not been explicitly approved.
+## Applied on 29 September 2026
 
-## Exact proposed configuration
+- Single-tenant Customer Capture SPA registration created; no client secret.
+- Hosted redirect only: https://kind-ground-0ee249903.5.azurestaticapps.net/ . Localhost was removed at the user's request.
+- Organisational users may sign in; enterprise-app assignment is not required. Each user still needs SharePoint access to the demo lists. The initial Rutesh assignment is retained but does not restrict sign-in.
+- Delegated Graph consent granted for `Lists.SelectedOperations.Selected` only.
+- Live frontend configuration deployed. Hosted Microsoft sign-in succeeded as the pilot account.
+- **List grants are still pending.** Hosted list reads correctly report Access denied until those grants are applied. No live approval or staging deletion has been tested yet.
 
-| Setting | Value |
+| Identifier | Value |
 |---|---|
-| Registration name | Customer Capture |
 | Tenant | 9ef5d8a8-4dc3-418c-b183-03d3c2f44b3f |
-| Account audience | This organisation only (AzureADMyOrg) |
-| Platform | Single-page application; no client secret |
-| Hosted redirect | https://kind-ground-0ee249903.5.azurestaticapps.net/ |
-| Local redirect | http://localhost:8000/ |
-| Delegated Graph permission | Lists.SelectedOperations.Selected |
-| Permission scope ID | 033b51ee-d6fa-4add-b627-ee680c7212b5 |
-| Resource grants | write on ContactStaging and AddedContacts only |
-| SharePoint site | https://randrltd.sharepoint.com/sites/PRJ_Nabo/ |
-| Initial assigned pilot | Rutesh Chaudhary, object ID 428a36fc-bbd1-48f1-ba6f-49e59f4414ee |
-| Enterprise app | Assignment required; only that pilot initially |
+| Application/client ID | 1da20b9d-2397-4a82-bfc8-9c3549f30cd3 |
+| Application object ID | 6c824978-4ae9-4565-935e-1a6e8aa2132e |
+| Enterprise application object ID | 1787a630-f3e0-46d0-9dec-b76cfcb27a61 |
+| Scope | Lists.SelectedOperations.Selected |
+| ContactStaging list ID | d2285f11-09dc-462b-b692-e3111a40c23f |
+| AddedContacts list ID | 85fc11a7-c916-4af3-b25e-1b7346aba98a |
 
-The grant allows the app, acting as the signed-in authorised reviewer, to read, create, edit and delete records in those two lists. No application-only permissions, mailbox permission or Dynamics permission is requested by the SPA. The reviewer’s existing list access is also required. Other pilot users must be explicitly assigned later.
+## Remaining setup: two list grants
 
-A selected-list grant breaks permission inheritance on the selected lists. Existing access should be inspected and preserved; do not change broader site access or silently broaden to Sites.ReadWrite.All if selected access fails. Obtain the owner’s decision if the tenant does not support the proposed setup.
+The current Azure CLI Graph session can manage Entra applications but lacks SharePoint management scopes. Both grant calls returned 403 Access denied. A requested CLI sign-in with Sites.ReadWrite.All was rejected by Microsoft with AADSTS65002 (the Microsoft-owned CLI application is not preauthorised for this scope). It did not grant the requested scope.
 
-## Setup after approval
+Use an authorised Microsoft Graph setup client, such as Graph Explorer, with delegated `Sites.ReadWrite.All` and an account allowed to manage permissions on these lists. This is the setup tool's permission, not Customer Capture's. The user completed Graph Explorer sign-in. Its permission panel showed existing consent for Sites.FullControl.All and Sites.Manage.All, so no new Graph Explorer consent was added by this task. A batch containing the two exact list grants is prepared in Graph Explorer and awaits the user’s Run query action. Do not broaden Customer Capture to site-wide permissions.
 
-1. Create the registration with the two exact SPA redirect URIs and delegated scope above.
-2. Create/configure its enterprise application with assignment required and assign the named pilot.
-3. Obtain authorised administrator consent for the delegated scope.
-4. Grant the application the `write` role on the two existing lists through Graph list permissions. IDs and schema are in [sharepoint-schema.json](sharepoint-schema.json). Do not grant access to the whole site.
-5. Set the public application/client ID in `frontend/config.js` and change `mode` to `live`. Tenant/site/list IDs are already configured.
-6. Test localhost sign-in and actual list reads/writes with the staged synthetic contact. No mailbox or customer passwords belong in configuration.
-7. Deploy the verified frontend and test the hosted redirect, shared count and denied-user behavior.
+Run these two **POST** requests separately using Microsoft Graph v1.0:
 
-The app uses redirect authentication and handleRedirectPromise at the root URL. MSAL 5.23.0 is vendored with its license; records stay in memory and tokens use sessionStorage. On silent renewal failure, sign out/in rather than retrying a possibly completed write automatically.
+```text
+https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/d2285f11-09dc-462b-b692-e3111a40c23f/permissions
 
-## Later Dynamics handoff
+https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/85fc11a7-c916-4af3-b25e-1b7346aba98a/permissions
+```
 
-AddedContacts is the durable approved source. Preserve it after staging cleanup. A future import/flow can consume it, recheck exact email and resolve mandatory Dynamics fields and target/role IDs before writing. Add import status, resulting Dynamics IDs and retry history when that integration is built; none is implemented now.
+Use the same request body for both (also saved as [sharepoint-app-grant.json](sharepoint-app-grant.json)):
 
-References: [delegated selected permissions and inheritance](https://learn.microsoft.com/en-us/graph/permissions-selected-overview), [list permission grant API](https://learn.microsoft.com/en-us/graph/api/list-post-permissions?view=graph-rest-1.0).
+```json
+{
+  "grantedToV2": {
+    "application": {
+      "id": "1da20b9d-2397-4a82-bfc8-9c3549f30cd3",
+      "displayName": "Customer Capture"
+    }
+  },
+  "roles": ["write"]
+}
+```
+
+Before repeating a request, GET its permissions collection and check whether this app already has a write grant. After creation, GET again to confirm the grant and preserve the existing groups/users. Selected-list grants break inheritance on those lists. Pre-grant inspection found five existing user/group entries per list; no entries have been changed by the failed grant calls.
+
+After both grants succeed, refresh the hosted app, verify the staged synthetic contact appears, correct it, approve it, then confirm one AddedContacts result and successful staging cleanup. Check the approved-contact count after reload. Dynamics remains unchanged.
+
+## Runtime and later handoff
+
+The app uses MSAL 5.23.0, authorization code + PKCE, a tenant-specific authority and the hosted root redirect. Tokens use sessionStorage; SharePoint records stay in memory. No application-only, mailbox or Dynamics permission is granted to this SPA.
+
+AddedContacts is the durable approved source for a later Dynamics import. That integration must recheck exact email, validate mandatory fields and real target/role IDs, and persist import outcomes and retries. It is not enabled by this demo.
+
+References: [selected permissions](https://learn.microsoft.com/en-us/graph/permissions-selected-overview), [list permission grant API](https://learn.microsoft.com/en-us/graph/api/list-post-permissions?view=graph-rest-1.0).

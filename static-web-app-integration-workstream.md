@@ -6,7 +6,7 @@
 
 The frontend now has separate sample-data and live adapters. Live mode supports single-tenant Entra sign-in, SharePoint reads, edited staging saves, direct approval into AddedContacts, staging cleanup and an approved-contact count. No approval flow is needed.
 
-**Activation is pending:** the Entra registration, consent, selected-list grants and pilot assignment need approval/configuration. `frontend/config.js` stays in `demo` mode with an empty client ID. No live browser sign-in or approval has been verified yet. See [the exact access plan](setup/entra-access.md).
+**Live sign-in is deployed and verified.** The single-tenant app permits organisational sign-in. The two selected-list write grants remain pending; the hosted app currently shows an accurate Access denied message for list reads. See [the access setup and remaining grant requests](setup/entra-access.md).
 
 The 15 automated store tests cover corrected values, save failures, lost responses, cleanup retry, duplicate protection, stale versions, concurrent reviewers and pagination. They use simulated Graph responses; they do not prove tenant configuration. A separate local browser test also verified corrected Alexander Morgan values, staging dropping from 1 to 0 and approved count increasing from 0 to 1, with no console errors. It used test authentication and simulated Graph responses outside the repository; those substitutes are not deployed. Run `node --test tests/*.test.mjs`.
 
@@ -44,7 +44,7 @@ Direct list editing is a demo trust model: authorised reviewers can change list 
 - Power Automate owner: ingestion, exact Dynamics email comparison, AI name suggestions and staging only.
 - Dynamics owner: mappings for a later approved-contact import; no Dynamics writes in this demo.
 
-Run locally from the repository root with `python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend`. Both the hosted URL and localhost must be registered redirects. Microsoft sign-in requires internet access.
+Run locally from the repository root with `python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend`. Only the hosted Azure URL is registered for live sign-in. Localhost is for sample-data development unless a redirect is explicitly added later. Microsoft sign-in requires internet access.
 
 ## Live acceptance still required
 

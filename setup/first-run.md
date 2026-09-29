@@ -2,7 +2,7 @@
 
 ## What is ready
 
-The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. Default demo mode uses browser storage. A separate live Entra/Graph adapter is implemented but activation and live browser verification await the [access setup](entra-access.md).
+The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app uses live Entra sign-in, now verified. List access awaits the two [SharePoint grants](entra-access.md). For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
 
 Run from the repository root:
 
@@ -63,7 +63,7 @@ Entity extraction supplies name evidence; it does not query Dynamics or prove id
 
 ## 5. Activate and test direct SharePoint approval
 
-Follow [the proposed Entra/list access configuration](entra-access.md) after explicit approval. Set the assigned SPA client ID and `mode: 'live'` in frontend/config.js. Sign in and load the real staged synthetic contact.
+Entra configuration and live deployment are complete. Apply the remaining two [SharePoint grants](entra-access.md), then sign into the hosted app and load the real staged synthetic contact.
 
 Correct its details and choose Approve & add. Confirm one AddedContacts record with the corrected values, removal from ContactStaging, and an increased Approved contacts created count after refresh/reload. Force a failed save and a cleanup failure in a controlled test to prove retry behavior. No second flow is needed and no Dynamics records are written.
 
