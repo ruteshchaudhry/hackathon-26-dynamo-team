@@ -24,6 +24,8 @@ Open http://localhost:8000 and choose **Open sample-data demo**. It uses fiction
 
 Run `node --test tests/demo-store.test.mjs` for the store checks.
 
+The app palette follows [Rendall & Rittner’s website](https://www.rendallandrittner.co.uk/): deep blue, light blue, white, and a restrained magenta accent. Theme values live in `frontend/styles.css`.
+
 ## Get started
 
 ```sh
