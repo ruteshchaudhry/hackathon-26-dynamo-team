@@ -12,7 +12,17 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 | [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
 | [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
 
-These documents describe the simplified POC and replace the earlier onboarding, admin, and digest implementation scope. They are handoffs, not evidence that the app, lists, or flows have been deployed.
+A local sample-data app is now available in `frontend/`. Microsoft SSO and the live services are not connected yet. Follow [the first-run setup guide](setup/first-run.md) to run the app and configure the services in order.
+
+## Run the local demo
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
+```
+
+Open http://localhost:8000 and choose **Open sample-data demo**. It uses fictional records stored only in that browser. Review, edit, approve, and rescan sample suggestions; approvals appear in Added contacts. No real mailbox or Dynamics records are changed.
+
+Run `node --test tests/demo-store.test.mjs` for the store checks.
 
 ## Get started
 

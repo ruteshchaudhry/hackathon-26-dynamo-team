@@ -4,6 +4,10 @@
 
 **Scope:** HTML, CSS, vanilla JavaScript, organisational SSO, and integration with SharePoint and Power Automate.
 
+## Current implementation
+
+The `frontend/` folder contains the local sample-data review app with editing, approval, search, repeat-scan protection, and added contacts. It uses browser storage and clearly identifies simulated operations. Live SSO and service adapters remain to be built. Follow [first-run setup](setup/first-run.md).
+
 ## Ownership
 
 - **Rutesh:** Frontend, sign-in, list reads, flow action calls, result display, and end-to-end integration.

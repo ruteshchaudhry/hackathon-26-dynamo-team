@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Capture · R&R</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <section id="welcome" class="welcome">
+    <div class="welcome-copy"><span class="brand-mark">R&R</span><p class="eyebrow">CUSTOMER CAPTURE</p>
+      <h1>Better contacts.<br>One review at a time.</h1>
+      <p>Turn inbox conversations into contact suggestions you can check, correct and approve.</p>
+      <div class="notice"><strong>Hackathon preview</strong><p>This demo uses fictional records stored in this browser. Microsoft sign-in, Outlook, AI, Dynamics and SharePoint are not connected.</p></div>
+      <button id="enter" class="primary">Open sample-data demo <span aria-hidden="true">→</span></button>
+      <p class="muted">Organisational sign-in will be connected after tenant setup.</p>
+    </div>
+    <div class="welcome-art" aria-hidden="true"><div class="orbit"></div><div class="preview-card"><span class="tag">READY FOR REVIEW</span><h2>Alex Morgan</h2><p>Willow Court · Leaseholder</p><div class="preview-line"></div><div class="preview-line short"></div><span class="preview-check">✓ Reviewed by you</span></div><div class="art-caption">Your inbox finds the details.<br>You make the decision.</div></div>
+  </section>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><a class="brand" href="#/review"><span class="brand-mark">R&R</span><span>Customer<br>Capture</span></a><p class="eyebrow">WORKSPACE</p>
+      <nav aria-label="Main"><a href="#/review" id="review-nav">Pending review <span id="nav-count">0</span></a><a href="#/added" id="added-nav">Added contacts</a></nav>
+      <div class="sidebar-bottom"><span class="avatar">DR</span><div><strong>Demo reviewer</strong><small>Sample-data session</small></div></div>
+      <button id="leave" class="text-button">Leave demo</button>
+    </aside>
+    <main>
+      <div class="mode-banner"><strong>Sample-data demo</strong><span>Local browser storage · no live Microsoft connections</span></div>
+      <header><div><p class="eyebrow">CONTACT DISCOVERY</p><h1 id="page-title">Pending review</h1><p id="page-description">A little review now. Better contact records tomorrow.</p></div><button id="scan" class="primary">Scan sample inbox</button></header>
+      <section class="stats" aria-label="Review summary"><div><span>Pending review</span><strong id="pending-count">0</strong></div><div><span>Needs your input</span><strong id="incomplete-count">0</strong></div><div><span>Approved demo relationships</span><strong id="added-count">0</strong></div></section>
+      <p id="feedback" role="status" aria-live="polite"></p>
+      <section class="queue"><div class="toolbar"><h2 id="list-title">Contact suggestions</h2><div><label class="sr-only" for="search">Search contacts or properties</label><input id="search" type="search" placeholder="Search contacts or properties"><button id="approve-selected" class="secondary" disabled>Approve selected</button></div></div>
+        <div class="table-wrap"><table><thead><tr id="table-head"></tr></thead><tbody id="rows"></tbody></table></div><div id="empty" class="empty" hidden><h3 id="empty-title">You're all caught up</h3><p id="empty-description">Scan the sample inbox to look for more suggestions.</p></div>
+      </section>
+      <footer><p>Approvals simulate additions. Dynamics is unchanged.</p><button id="reset" class="text-button">Reset sample data</button></footer>
+    </main>
+  </div>
+  <dialog id="review-dialog"><form id="review-form"><div class="dialog-heading"><div><p class="eyebrow">CONTACT SUGGESTION</p><h2>Review contact</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="Close review">×</button></div>
+    <p class="muted">Check the details before adding this relationship to demo contacts.</p>
+    <label>Email<input name="email" type="email" required maxlength="254"></label>
+    <div class="field-row"><label>First name<input name="firstName" maxlength="100"></label><label>Last name<input name="lastName" maxlength="100"></label></div>
+    <label>Property<select name="targetId"></select></label><label>Relationship<select name="role"></select></label>
+    <div class="evidence"><span class="eyebrow">SAMPLE EMAIL EVIDENCE</span><strong id="source-subject"></strong><p id="source-excerpt"></p></div>
+    <p id="form-error" class="error" role="alert"></p><div class="dialog-actions"><button type="submit" name="action" value="save" class="secondary">Save for later</button><button type="submit" name="action" value="approve" class="primary">Approve & add</button></div>
+  </form></dialog>
+</body>
+</html>

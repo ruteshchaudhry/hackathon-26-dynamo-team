@@ -8,7 +8,7 @@
 
 Use the [SharePoint field contract](sharepoint-workstream.md), [Dynamics read mappings](dataverse-workstream.md), and [frontend contract](static-web-app-integration-workstream.md).
 
-1. Configure one authorised demo inbox and read-only Dynamics access.
+1. Configure `testpmdyno-mine@outlook.com` using the Outlook.com connector and read-only Dynamics access in environment `ae00c6cc-145f-41ea-bf30-1f0979a559c6`. Verify environment connector policy permits this combination.
 2. Prove a bounded scan of five synthetic emails into ContactStaging.
 3. Prove edit/approval processing into AddedContacts, including retry and cleanup.
 4. Connect authenticated browser actions and verify the complete demo journey.
@@ -19,8 +19,8 @@ The Outlook connection is configured by the team. Signing into the web app does 
 
 - [ ] Expose Scan now through the verified authenticated action contract below; use a manual designer run while building it.
 - [ ] Restrict the flow to the configured demo mailbox/folder and approved R&R callers.
-- [ ] Read a bounded sample batch, including read messages. Capture sender, recipients, mailbox, source message ID, received time, subject, and a short excerpt.
-- [ ] Parse explicit sample property identifiers and role labels. Filter irrelevant/internal messages using agreed sample rules; do not treat every sender as a customer.
+- [ ] Use Outlook.com Get emails (V2) for a bounded sample batch, including read messages. Capture sender, recipients, mailbox, source message ID, received time, subject, and a short excerpt.
+- [ ] Start with explicit sample property identifiers and role labels. Once AI Builder access/capacity is verified, use the [draft extraction prompt](setup/email-extraction-prompt.md), validate its structured output, and resolve suggestions with API queries. Filter irrelevant/internal messages using agreed sample rules; do not treat every sender as a customer.
 - [ ] Query live Dynamics contacts and target records, then check the actual contact-target-role relationship. A failed query is an error, not proof of absence.
 - [ ] Check AddedContacts and ContactStaging for both business and source keys before adding a suggestion.
 - [ ] Stage only missing contact/relationship work. Preserve uncertain fields for review rather than inventing them.

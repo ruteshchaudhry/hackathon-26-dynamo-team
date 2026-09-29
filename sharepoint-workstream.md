@@ -8,7 +8,7 @@
 
 ## Create two lists
 
-Create **ContactStaging** and **AddedContacts** in the team's approved SharePoint site. Share their site/list IDs and actual internal column names with both implementation owners. These are SharePoint Lists, not Excel files in a document library.
+Create **ContactStaging** and **AddedContacts** in https://randrltd.sharepoint.com/sites/PRJ_Nabo/. Check for existing lists before creating them. Share their site/list IDs and actual internal column names with both implementation owners. These are SharePoint Lists, not Excel files in a document library.
 
 | List | Purpose |
 |---|---|
