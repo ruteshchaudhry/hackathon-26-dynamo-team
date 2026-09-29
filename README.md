@@ -16,6 +16,10 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 
 A local sample-data app is now available in `frontend/`. The frontend is still in sample-data mode; its Microsoft SSO and live service adapters are not connected yet. Follow [the first-run setup guide](setup/first-run.md) to run the app and configure the services in order.
 
+## Hosted demo
+
+[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; current sample-data mode still uses each browser’s local storage. See [deployment and redeployment notes](setup/azure-static-web-app.md).
+
 ## Run the local demo
 
 ```sh
@@ -26,7 +30,7 @@ Open http://localhost:8000 and choose **Open sample-data demo**. It uses fiction
 
 Run `node --test tests/demo-store.test.mjs` for the store checks.
 
-The app uses a generic slate and teal palette without organisation logos. Theme values live in `frontend/styles.css`. Configured tenant service URLs are retained for integration.
+The app retains the deep blue, light blue and magenta palette, with a generic Customer Capture name and no organisation logos. Theme values live in `frontend/styles.css`. Configured tenant service URLs are retained for integration.
 
 ## Get started
 

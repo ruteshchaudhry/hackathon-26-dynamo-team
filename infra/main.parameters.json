@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "staticWebAppName": { "value": "swa-customer-capture-dev-20e0" },
+    "location": { "value": "westeurope" },
+    "environmentName": { "value": "customer-capture-dev-20e0" },
+    "sessionId": { "value": "20e09ce6-d6c1-4127-9b92-a58deaae1642" },
+    "deployedBy": { "value": "Rutesh Chaudhary" },
+    "createdAt": { "value": "2026-09-29T20:34:51Z" }
+  }
+}
