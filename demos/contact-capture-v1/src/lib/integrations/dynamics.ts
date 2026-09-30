@@ -58,8 +58,8 @@ function toListed(c: CreatedContact): ListedContact {
     firstName: c.firstName,
     lastName: c.lastName,
     emailAddress: c.emailAddress,
-    relatedPremises: premisesLabel(c.premisesId),
-    relationshipType: c.relationshipType,
+    relatedPremises: c.relatedPremises ?? premisesLabel(c.premisesId),
+    relationshipType: c.relationshipType || undefined,
     contactType: "Customer",
     isNew: true,
     createdAt: c.createdAt,
@@ -124,4 +124,3 @@ export async function createPremisesRelationship(
 export function markLastAdded(ids: string[]) {
   setDemoState((s) => ({ ...s, lastAddedIds: ids }));
 }
-
