@@ -168,7 +168,9 @@
 /* Keep the original desktop design while making the demo usable on phones. */
 .demo-switcher > a, .demo-switcher > div { flex-shrink: 0; }
 .outlook-reading article { overflow-wrap: anywhere; }
+.dynamine-frame { display: block; width: 100%; height: calc(100dvh - 2.5rem); border: 0; }
 @media (max-width: 767px) {
+  .dynamine-frame { height: calc(100dvh - 6.5rem); }
   .demo-switcher { height: auto; min-height: 5.5rem; flex-wrap: wrap; padding: .5rem; gap: .25rem; }
   .demo-switcher > span { display: none; }
   .demo-switcher > a { flex: 1; padding: .5rem; font-size: .875rem; }
