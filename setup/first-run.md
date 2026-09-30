@@ -2,7 +2,7 @@
 
 ## What is ready
 
-The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app uses live Entra sign-in, now verified. List access awaits the two [SharePoint grants](entra-access.md). For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
+The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app still uses the earlier delegated build. The source now has an app-only backend; complete [Entra API and SharePoint setup](entra-access.md), then deploy frontend and API together. End users need no SharePoint permissions. For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
 
 Run from the repository root:
 
@@ -13,7 +13,8 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
 Open http://localhost:8000 and choose **Open sample-data demo**. Use **Reset sample data** to restore the fictional examples. Run the store checks with:
 
 ```sh
-node --test tests/*.test.mjs
+npm ci --prefix api
+npm test --prefix api
 ```
 
 ## 1. Sign in with the right accounts
@@ -36,9 +37,9 @@ The existing lists were reused and missing columns added on 29 September 2026:
 - `ContactStaging`
 - `AddedContacts`
 
-Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs are also recorded in frontend/config.js; the resolved Graph site ID is configured there too. AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
+Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs and the resolved Graph site ID are server settings; see [backend configuration](backend-settings.example.json). AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
 
-CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Approved-user permissions and API access still need configuration/testing with the site owner. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
+CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Backend application permissions still need configuration/testing with the site owner; no user list grants are required. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
 
 ## 3. Manual scan flow: first path verified
 
@@ -61,9 +62,9 @@ Use **AI Builder → Extract standard entities**, the option selected by Rutesh.
 
 Entity extraction supplies name evidence; it does not query Dynamics or prove identity. Keep unclear first/last names blank for PM review. Advisory name matching may use bounded `firstname`/`lastname` reads after zero email matches; never automatically link on a name alone. See [AI guidance](email-extraction-prompt.md).
 
-## 5. Activate and test direct SharePoint approval
+## 5. Activate and test backend SharePoint approval
 
-Entra configuration and live deployment are complete. Apply the remaining two [SharePoint grants](entra-access.md), then sign into the hosted app and load the real staged synthetic contact.
+Complete the API scope, application consent, credential and two list grants in [access setup](entra-access.md). Deploy the frontend and API together. Sign into the hosted app with a tenant account that has no direct SharePoint list access and load the staged synthetic contact.
 
 Correct its details and choose Approve & add. Confirm one AddedContacts record with the corrected values, removal from ContactStaging, and an increased Approved contacts created count after refresh/reload. Force a failed save and a cleanup failure in a controlled test to prove retry behavior. No second flow is needed and no Dynamics records are written.
 
@@ -74,7 +75,7 @@ The app has Refresh records while ingestion remains a manual designer-run flow. 
 - [ ] Both browser sign-ins completed and correct tenant/environment verified.
 - [ ] Outlook.com, SharePoint, and Dataverse connections tested together.
 - [x] SharePoint Lists and their column schema confirmed.
-- [ ] SharePoint pilot permissions and runtime duplicate constraints tested.
+- [ ] Backend app grants and runtime duplicate constraints tested; app users require no list permissions.
 - [x] Mock email input plus live Dynamics reads creates one suggestion; repeating the scan skips creation.
 - [ ] Real inbox ingestion replaces the sample source and is tested when access is available.
 - [x] AI Builder entity extraction ran successfully on the synthetic email.

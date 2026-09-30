@@ -1,4 +1,4 @@
-// Delegated Microsoft Graph operations. Records stay in memory, never localStorage.
+// Server-only app-identity Microsoft Graph operations. Never forward browser tokens here.
 export function reviewedFields(input) {
   const fields = {};
   for (const key of ['Email', 'FirstName', 'LastName', 'TargetLabel', 'RelationshipLabel']) {
@@ -22,9 +22,9 @@ export function createSharePointStore({ config, getToken, reviewerId, fetcher = 
     const headers = { Authorization: `Bearer ${token}` };
     if (body) headers['Content-Type'] = 'application/json';
     if (etag) headers['If-Match'] = etag;
-    const response = await fetcher(url, { method, headers, body: body ? JSON.stringify(body) : undefined, redirect: 'error' });
+    const response = await fetcher(url, { method, headers, body: body ? JSON.stringify(body) : undefined, redirect: 'error', signal: AbortSignal.timeout(20000) });
     if (!response.ok) {
-      const messages = { 401: 'Your session expired. Sign out and sign in again.', 403: 'Access denied. Check the app grant and your SharePoint list permissions.', 409: 'This contact conflicts with an existing record. Refresh and review it.', 412: 'This record changed. Refresh and review the latest values.', 429: 'SharePoint is busy. Wait briefly, then refresh before retrying.' };
+      const messages = { 401: 'The backend SharePoint credential was rejected. Ask the app owner to check setup.', 403: 'Access denied. The backend app needs its SharePoint list grant; users do not need list permissions.', 409: 'This contact conflicts with an existing record. Refresh and review it.', 412: 'This record changed. Refresh and review the latest values.', 429: 'SharePoint is busy. Wait briefly, then refresh before retrying.' };
       const error = new Error(messages[response.status] || `SharePoint request failed (${response.status}). Refresh before retrying.`);
       error.status = response.status; throw error;
     }

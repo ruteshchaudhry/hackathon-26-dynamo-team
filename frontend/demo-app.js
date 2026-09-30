@@ -66,7 +66,7 @@ $('review-form').addEventListener('submit', event => {
     const fields = Object.fromEntries(new FormData(event.currentTarget));
     if (event.submitter?.value === 'approve') validate(fields);
     const saved = store.save(active.id, active.version, fields); active = saved;
-    if (event.submitter?.value === 'approve') { store.approve(saved.id, saved.version); feedback('Added to demo contacts. No Dynamics records were changed.'); }
+    if (event.submitter?.value === 'approve') { store.approve(saved.id, saved.version); feedback('Added to demo contacts.'); }
     else feedback('Changes saved for later review.');
     $('review-dialog').close(); render();
   } catch (error) { $('form-error').textContent = error.message; }

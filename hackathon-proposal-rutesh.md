@@ -2,7 +2,7 @@
 
 **Author:** Rutesh Chaudhary
 
-**Status:** Simplified hackathon scope, updated 29 September 2026. Implementation handoff; services have not been provisioned by this document.
+**Status:** Simplified hackathon scope, updated 30 September 2026. Implementation handoff; services have not been provisioned by this document.
 
 ## 1. Problem and objective
 
@@ -14,13 +14,13 @@ Until inbox access is available, use a manually triggered Power Automate flow wi
 
 ## 2. Agreed user journey
 
-1. An authorised pilot user signs into the static web app using organisational Microsoft SSO.
+1. An organisational user signs into the static web app using Microsoft SSO. Every signed-in tenant user can review the shared queue; users need no SharePoint permissions.
 2. The user sees pending suggestions and can choose **Refresh records** after the sample-email scan is run in Power Automate.
 3. Power Automate reads a bounded batch of sample emails, captures sender and recipients, and extracts explicit property references and relationship labels.
 4. The flow first matches the normalised sender email against live Dynamics `Contact.emailaddress1`. For missing senders, use AI Builder entity extraction for name suggestions and check pending/approved SharePoint records before staging to avoid duplicates. Property/development/premises details remain reviewable.
 5. Only senders with no exact email match become records in **ContactStaging** for review. If `Contact.emailaddress1` matches the sender, finish without staging or creating a relationship. A failed lookup stops processing; it is not a missing contact.
 6. The user reviews and corrects email, names, target property/development/premises, and relationship, then approves selected records. Email is required. Names and property/relationship descriptions may remain blank in this contact-only demo; later Dynamics import requires validated fields and IDs.
-7. The static app saves the corrected values directly to **AddedContacts** through delegated Microsoft Graph calls. It checks existing approved records and uses unique keys. No second approval flow or approval-time Dynamics lookup is needed for the demo.
+7. The static app calls an Entra-protected backend API, which saves corrected values to **AddedContacts** using its own Microsoft Graph application identity. It checks existing approved records and uses unique keys. No second approval flow or approval-time Dynamics lookup is needed for the demo.
 8. The staging entry is removed only after its durable outcome has been recorded. Failed entries remain available for retry. The UI shows a saved contact or a cleanup retry. A duplicate from another suggestion remains staged for investigation.
 9. The user can open **Added contacts** to see corrected approved records and the **Approved contacts created** total. This list can feed a later Dynamics import; that import is not enabled in the demo.
 
@@ -33,7 +33,8 @@ Until inbox access is available, use a manually triggered Power Automate flow wi
 | Power Automate | Inbox reading, parsing, live comparison, staging and scan duplicate checks |
 | SharePoint ContactStaging | Pending review and failed processing records |
 | SharePoint AddedContacts | Approved demo contacts and durable duplicate detection |
-| Static web app | SSO, shared list reads, correction, direct SharePoint approval/cleanup, refresh, results and count |
+| Static web app | SSO, pending review, correction, approval requests, refresh, results and count |
+| JavaScript backend API | Validate app sign-in; app-only SharePoint reads, edits, approval and staging cleanup |
 
 The PM-facing fields are email, first name, last name, property/development/premises, and relationship to the property. Keep the actual Dynamics IDs alongside display labels. Supporting fields retain mailbox, source message ID, recipients, time, a short supporting excerpt, reviewer, processing status, and errors.
 
@@ -64,9 +65,9 @@ The general data model still permits multiple inboxes per property and multiple 
 
 ## 6. Delivery and remaining inputs
 
-Rutesh builds HTML, CSS, and vanilla JavaScript with organisational SSO. Serve the frontend locally using Python's static file server; use Azure Static Web Apps Free if hosting is available. The Python server serves files only; the cloud scan performs ingestion and the browser uses Graph for review and approval.
+Rutesh builds HTML, CSS and vanilla JavaScript with organisational SSO, plus a small JavaScript Azure Functions API hosted with Azure Static Web Apps Free. The browser calls the API; only the API uses Graph and a server-held application credential. Python's static file server is only for offline sample-data development.
 
-The team must supply the demo inbox/folder, Dynamics read-only mapping and connection, SharePoint site/list IDs and fields, approved pilot users, Entra configuration, and delegated selected-list read/write access. A browser scan trigger is deferred; the current scan runs in the designer. Validate browser access and required platform entitlements before the live integration demo.
+The team must supply the demo inbox/folder, Dynamics read-only mapping and connection, SharePoint site/list IDs and fields, Entra API configuration, a server-held application credential, application-permission consent and write grants on the two lists. Users need no SharePoint access; the Power Automate connection still needs its own list access. A browser scan trigger is deferred; the current scan runs in the designer. Validate browser access and required platform entitlements before the live integration demo.
 
 Implementation tasks are split into [frontend and integration](static-web-app-integration-workstream.md), [Power Automate](power-automate-workstream.md), [SharePoint](sharepoint-workstream.md), and [Dynamics read-only access](dataverse-workstream.md).
 

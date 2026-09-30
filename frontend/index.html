@@ -11,9 +11,9 @@
     <div class="welcome-copy"><p class="eyebrow">CUSTOMER CAPTURE</p>
       <h1>Better contacts.<br>One review at a time.</h1>
       <p>Turn inbox conversations into contact suggestions you can check, correct and approve.</p>
-      <div class="notice"><strong>Hackathon preview</strong><p>This demo uses fictional records stored in this browser. Microsoft sign-in, Outlook, AI, Dynamics and SharePoint are not connected.</p></div>
+      <div class="notice"><strong>Hackathon preview</strong><p>Explore the review journey with fictional contacts. Sample changes stay in this browser.</p></div>
       <button id="enter" class="primary">Open sample-data demo <span aria-hidden="true">→</span></button>
-      <p class="muted">Organisational sign-in will be connected after tenant setup.</p>
+      <p class="muted">Review suggestions, make corrections and add contacts.</p>
     </div>
     <div class="welcome-art" aria-hidden="true"><div class="orbit"></div><div class="preview-card"><span class="tag">READY FOR REVIEW</span><h2>Alex Morgan</h2><p>Willow Court · Leaseholder</p><div class="preview-line"></div><div class="preview-line short"></div><span class="preview-check">✓ Reviewed by you</span></div><div class="art-caption">Your inbox finds the details.<br>You make the decision.</div></div>
   </section>
@@ -24,14 +24,14 @@
       <button id="leave" class="text-button">Leave demo</button>
     </aside>
     <main>
-      <div class="mode-banner"><strong>Sample-data demo</strong><span>Local browser storage · no live Microsoft connections</span></div>
+      <div class="mode-banner"><strong>Sample-data demo</strong><span>Fictional contacts for the demo</span></div>
       <header><div><p class="eyebrow">CONTACT DISCOVERY</p><h1 id="page-title">Pending review</h1><p id="page-description">A little review now. Better contact records tomorrow.</p></div><button id="scan" class="primary">Scan sample inbox</button></header>
       <section class="stats" aria-label="Review summary"><div><span>Pending review</span><strong id="pending-count">0</strong></div><div><span>Needs your input</span><strong id="incomplete-count">0</strong></div><div><span>Approved contacts created</span><strong id="added-count">0</strong></div></section>
       <p id="feedback" role="status" aria-live="polite"></p>
       <section class="queue"><div class="toolbar"><h2 id="list-title">Contact suggestions</h2><div><label class="sr-only" for="search">Search contacts or properties</label><input id="search" type="search" placeholder="Search contacts or properties"><button id="approve-selected" class="secondary" disabled>Approve selected</button></div></div>
         <div class="table-wrap"><table><thead><tr id="table-head"></tr></thead><tbody id="rows"></tbody></table></div><div id="empty" class="empty" hidden><h3 id="empty-title">You're all caught up</h3><p id="empty-description">Scan the sample inbox to look for more suggestions.</p></div>
       </section>
-      <footer><p>Approvals simulate additions. Dynamics is unchanged.</p><button id="reset" class="text-button">Reset sample data</button></footer>
+      <footer><p>Sample approvals add fictional contacts for this demo.</p><button id="reset" class="text-button">Reset sample data</button></footer>
     </main>
   </div>
   <dialog id="review-dialog"><form id="review-form"><div class="dialog-heading"><div><p class="eyebrow">CONTACT SUGGESTION</p><h2>Review contact</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="Close review">×</button></div>

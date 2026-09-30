@@ -1,57 +1,57 @@
-# Static web app and integration: Customer Capture
+# Static web app and API: Customer Capture
 
-**Owner:** Rutesh. **Stack:** HTML, CSS, vanilla JavaScript, locally bundled MSAL.js, Microsoft Graph. Azure Static Web Apps Free or Python's local static file server.
+**Owner:** Rutesh. **Stack:** HTML, CSS, vanilla JavaScript, MSAL, JavaScript Azure Functions and Microsoft Graph. Frontend and managed API are hosted together on Azure Static Web Apps Free.
 
-## Current implementation
+## Access and user journey
 
-The frontend now has separate sample-data and live adapters. Live mode supports single-tenant Entra sign-in, SharePoint reads, edited staging saves, direct approval into AddedContacts, staging cleanup and an approved-contact count. No approval flow is needed.
+Every signed-in user in the configured tenant can review the shared queue. Users require no SharePoint site/list permission. The browser calls `/api/contacts`; the server alone accesses SharePoint using an application credential. No roles, invitation screens, reviewer assignments or per-user SharePoint checks.
 
-**Live sign-in is deployed and verified.** The single-tenant app permits organisational sign-in. The two selected-list write grants remain pending; the hosted app currently shows an accurate Access denied message for list reads. See [the access setup and remaining grant requests](setup/entra-access.md).
+1. Reuse an existing work-account browser session where possible. Fall back to Microsoft's sign-in interaction only when required; avoid repeated redirect loops and respect sign-out.
+2. Display **Pending review**. **Refresh records** loads changes from scanning or other reviewers.
+3. Review email, first name, last name, optional property and relationship descriptions.
+4. **Save for later** saves corrections. **Approve & add** saves them, confirms the version, marks processing and creates the approved contact.
+5. Read back the saved contact before deleting its pending record with an eTag. Failed additions retain pending review; cleanup failures can be retried without a duplicate.
+6. **Added contacts** shows corrected records; the count includes all saved rows with SimulatedContactCreated=true, independent of filtering.
 
-The 15 automated store tests cover corrected values, save failures, lost responses, cleanup retry, duplicate protection, stale versions, concurrent reviewers and pagination. They use simulated Graph responses; they do not prove tenant configuration. A separate local browser test also verified corrected Alexander Morgan values, staging dropping from 1 to 0 and approved count increasing from 0 to 1, with no console errors. It used test authentication and simulated Graph responses outside the repository; those substitutes are not deployed. Run `node --test tests/*.test.mjs`.
+The app's labels, notices and errors use plain contact-review language. Do not expose SharePoint, Graph, Dataverse, backend configuration or implementation details in user-facing copy. Microsoft owns its sign-in screens and may require account selection, consent or MFA.
 
-## User journey
+## Implementation
 
-1. Sign in using the configured organisation account.
-2. Load ContactStaging and AddedContacts from SharePoint. **Refresh records** fetches changes made by the scan flow or another reviewer.
-3. Review and correct email, first name, last name, property description and relationship description. Email is required; descriptions are optional in this contact-only demo. Unknown Dynamics IDs remain blank. Changing a description clears stale associated IDs.
-4. **Save for later** updates staging. **Approve & add** saves edits, confirms the current version, marks processing and creates one approved contact in AddedContacts.
-5. Read back the durable approved contact, then delete staging using its expected version. A failed save leaves staging. A failed delete leaves a recoverable cleanup item.
-6. Open **Added contacts** and see the saved corrected values. **Approved contacts created** counts persisted AddedContacts rows with SimulatedContactCreated=true across all pages, independent of search filtering. It does not count Dynamics creations.
-
-Processing and cleanup items are locked for editing in this UI. Retry finishes the saved approval without another contact. Duplicate-email conflicts from different suggestions retain staging for investigation. SharePoint unique CandidateKey and SourceStagingId columns are essential; buttons alone do not prevent duplicates.
-
-## Integration boundaries
-
-| Operation | Implementation |
+| Component | Responsibility |
 |---|---|
-| Sign-in | MSAL, tenant-specific authority, authorization code + PKCE, session cache |
-| Shared reads | Graph list items with pagination; no record cache in localStorage |
-| Save corrections | Graph PATCH of allowed fields with If-Match |
-| Approve | Graph POST to AddedContacts, durable read-back, then conditional DELETE from ContactStaging |
-| Retry | Find existing outcome by SourceStagingId before any repeated creation |
-| Scan | Existing Power Automate designer run; browser has Refresh, not a connected Scan now action |
-| Dynamics | Read-only lookup in the scan flow; no approval-time Dynamics query or write |
+| frontend/live-app.js | Review UI and MSAL sign-in |
+| frontend/session.mjs | Silent SSO, one automatic redirect, explicit sign-out handling |
+| frontend/api-store.mjs | Same-origin API calls; no Graph scopes, credentials or list IDs |
+| api/lib/auth.mjs | Verify signed v2 access tokens, audience, tenant, scope and caller |
+| api/lib/handler.mjs | Fixed read/save/approve operations; validate inputs and derive reviewer from token |
+| api/lib/graph-token.mjs | Server credential exchange, cached Graph application token |
+| api/lib/sharepoint-store.mjs | Graph list operations, version checks, duplicate protection and durable save-before-delete |
 
-Use the verified list IDs and internal field mappings in [sharepoint-schema.json](setup/sharepoint-schema.json). Keep credentials and anonymous flow URLs out of the frontend. The app uses delegated `Lists.SelectedOperations.Selected` and proposed write grants on just the two lists; the signed-in reviewer also needs appropriate SharePoint access. This is a shared demo queue, not item-level PM isolation.
+The three operations are `GET /api/contacts`, `POST /api/contacts/save` with `{expected:{id,eTag},fields}`, and `POST /api/contacts/approve` with `{expected:{id,eTag}}`. Requests require an Entra API bearer token. IDs/credentials come from server settings; callers cannot select arbitrary lists or set approval metadata. Correction accepts only email, names and property/relationship labels. The server rereads authoritative records before approval.
 
-Direct list editing is a demo trust model: authorised reviewers can change list records outside the UI too. ApprovedBy is filled from the signed-in account, but is not an immutable audit mechanism. A production approval process needs server-enforced validation and audit.
+Changing descriptions clears stale Dynamics IDs. Unique CandidateKey in both lists and SourceStagingId in AddedContacts remain essential for concurrent requests. Processing items cannot be edited. Conflicting approvals retain records for investigation. ApprovedBy is a verified Entra object ID; site owners/automation can still edit the lists, so this is not an immutable audit system.
 
-## Handoff
+No approval flow or approval-time Dynamics query is added. Scanning remains a manual designer-run Power Automate flow. The UI refreshes its results; Scan now is not connected.
 
-- Rutesh: frontend, Graph adapter, Entra integration, deployment and complete browser test.
-- SharePoint owner: grant the approved access, retain unique constraints, verify live API behavior.
-- Power Automate owner: ingestion, exact Dynamics email comparison, AI name suggestions and staging only.
-- Dynamics owner: mappings for a later approved-contact import; no Dynamics writes in this demo.
+## Setup, testing and status
 
-Run locally from the repository root with `python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend`. Only the hosted Azure URL is registered for live sign-in. Localhost is for sample-data development unless a redirect is explicitly added later. Microsoft sign-in requires internet access.
+See [Entra/backend access](setup/entra-access.md), [server settings](setup/backend-settings.example.json) and [deployment](setup/azure-static-web-app.md). The API is implemented in source; the hosted site still runs the earlier delegated version until the API scope, application consent, server credential and list grants are configured. No live approval has been claimed.
 
-## Live acceptance still required
+```sh
+npm ci --prefix api
+npm test --prefix api
+```
 
-- [ ] Sign in as the assigned pilot and load the real staged synthetic email.
-- [ ] Edit the contact, approve, confirm corrected AddedContacts fields, staging removal and count after reload.
-- [ ] Verify two browsers see the same records.
-- [ ] Verify permission denial, session expiry, actual unique-key conflicts and cleanup retries.
-- [ ] Verify the existing flow's source-message duplicate check still suppresses the original email after an approved email correction.
+Tests cover signed-token validation, authentication before storage, forged reviewer/list input, app-token exchange/cache, silent sign-in behavior, corrected values, duplicate protection, concurrency, lost create responses, cleanup retries, stale versions and pagination. They use synthetic data and simulated Graph responses; they do not prove cloud consent or grants.
 
-References: [selected permissions](https://learn.microsoft.com/en-us/graph/permissions-selected-overview), [conditional field updates](https://learn.microsoft.com/en-us/graph/api/listitem-update?view=graph-rest-1.0).
+Offline sample mode remains available by setting frontend/config.js mode to demo locally and serving frontend with Python. It is distinct from the live integration and needs no Microsoft service connection. Live sign-in has only the hosted redirect.
+
+## Remaining acceptance
+
+- [ ] Configure API scope and server app credentials/permissions, then deploy both parts.
+- [ ] Sign in as a tenant user without SharePoint access and verify the complete review journey.
+- [ ] Verify two browsers share approved contacts and the persisted count.
+- [ ] Verify repeated original emails do not recreate staging after an email correction.
+- [ ] Verify silent browser sign-in, required interactive fallback and sign-out in the hosted environment.
+
+Storage owner handles list schema/grants; Power Automate owner handles ingestion; Dynamics owner handles read-only mappings. A future Dynamics import must recheck duplicates and validate required names and real target/role IDs.

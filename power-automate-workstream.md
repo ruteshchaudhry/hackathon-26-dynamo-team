@@ -36,7 +36,7 @@ Serialise scan runs for this one-inbox POC and use unique keys to handle repeate
 
 ## Approval belongs to the static app
 
-Do not build a second approval flow. The browser uses delegated Graph access to save corrections, create an approved contact in AddedContacts, confirm the durable result and delete staging. See [frontend integration](static-web-app-integration-workstream.md). Dynamics is queried during scanning only; browser approval does not recheck or write Dynamics.
+Do not build a second approval flow. The browser calls our protected API. The backend uses its own Graph application identity to save corrections, create an approved contact in AddedContacts, confirm the durable result and delete staging. End users need no SharePoint permissions. See [frontend integration](static-web-app-integration-workstream.md). Dynamics is queried during scanning only; browser approval does not recheck or write Dynamics.
 
 The current app exposes **Refresh records**. It does not yet invoke the scan flow; run the existing manual flow in the designer for the demo. A future Scan now endpoint must use authenticated calls and verified browser CORS. Never embed a secret-bearing anonymous trigger URL.
 

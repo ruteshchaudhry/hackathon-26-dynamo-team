@@ -6,21 +6,27 @@ Deployment target: `swa-customer-capture-dev-20e0` in the existing `rg-portalapp
 
 Verified on 29 September 2026: all app assets return HTTP 200 with expected MIME types. The hosted review dialog, sample approval, Added contacts navigation and reload persistence passed browser checks.
 
-## What is deployed
+## Source and deployed status
 
-Only `frontend/` is published. It contains static HTML, CSS, JavaScript and synthetic fixtures. The app retains the deep blue/light blue/magenta palette without organisation names or logos. No Python server is needed in Azure. Hash navigation works without server-side route rewrites, and `staticwebapp.config.json` explicitly serves `.mjs` as JavaScript.
+The source contains static HTML/CSS/JavaScript in `frontend/` and a JavaScript managed Azure Functions API in `api/`. The existing hosted site still runs the earlier delegated frontend. The app-only API version is not deployed until its Entra API scope, application consent, server credential and two list grants are configured. See [access setup](entra-access.md).
 
-The current site uses real organisational Entra sign-in. Hosted sign-in is verified. SharePoint reads and approval remain blocked until the two selected-list grants are applied; the UI reports Access denied rather than displaying fixture records. Power Automate still runs separately in the designer.
+Managed HTTP APIs are included in the Free plan. No separate Function App, Python server or hosting-tier upgrade is required. The API runtime is Node 22, configured in staticwebapp.config.json. The backend validates our own Entra API access tokens; it does not depend on Static Web Apps custom authentication registrations or user SharePoint permissions. Secrets live only in server application settings. Managed Functions do not offer managed identity.
 
-## Redeploy frontend changes
+## Deploy frontend and API together
 
-Sign in with `az login` if necessary, then run from the repository root:
+Complete [access setup](entra-access.md), including server application settings. Then run from the repository root:
 
 ```sh
+npm ci --prefix api
+npm test --prefix api
 python3 setup/deploy-static-app.py
 ```
 
-The helper reads the app deployment credential through Azure CLI, passes it only in the child process environment and redacts it from output. It does not save the credential or use the operating-system keychain. It publishes to the production slot of this demo resource. Node.js/npm and Azure CLI are required; the Microsoft SWA CLI is pinned to version 2.0.10. There is no GitHub automatic-deployment workflow configured yet.
+The helper installs the pinned API dependencies from the lockfile, retrieves the deployment credential through Azure CLI and passes it only in the child process environment, redacting it from output. It publishes both frontend and API to this demo's production slot. Node.js/npm and Azure CLI sign-in are required. The SWA CLI is pinned to 2.0.10; there is no automatic GitHub deployment. Only frontend assets become publicly served files; api/ runs as Functions and server settings remain private.
+
+Check `/api/contacts` without a token returns 401 after backend configuration, then test a signed-in tenant user with no direct SharePoint access. Verify corrected approval, read-back, pending removal and count after reload. A 503 indicates backend settings are not ready; raw setup errors are not shown to app users. Live cloud verification remains pending.
+
+References: [hosting plans](https://learn.microsoft.com/en-us/azure/static-web-apps/plans), [managed APIs](https://learn.microsoft.com/en-us/azure/static-web-apps/apis-functions), [CLI deployment](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy/).
 
 ## Reconcile infrastructure
 
@@ -29,10 +35,6 @@ The Bicep template contains one Free Static Web App. Use **Incremental** mode wi
 ```sh
 az deployment group create --subscription 36a7b914-f275-4782-a9ea-bda7362ff589 --resource-group rg-portalapp-dev-uks --name customer-capture-20e0 --template-file infra/main.bicep --parameters @infra/main.parameters.json --mode Incremental
 ```
-
-## Remaining: grant access to shared records
-
-Apply the two exact grants in [Entra access setup](entra-access.md), then refresh the hosted app and verify real reads, corrected approval, staging cleanup and the count. No approval flow is needed. No localhost sign-in redirect is configured.
 
 ## Remove only this demo when finished
 

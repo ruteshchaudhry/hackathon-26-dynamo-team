@@ -1,3 +1,10 @@
 # Original installation archive; extracted skills are tracked instead.
 /hackathon-design-skills-Outlook-Dynamics.zip
 .copilot-azure/
+
+node_modules/
+local.settings.json
+.env
+.env.*
+!.env.example
+__pycache__/

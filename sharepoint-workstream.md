@@ -4,7 +4,7 @@
 
 **Consumers:** Power Automate owner and Rutesh.
 
-**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; the live scan created one synthetic Pending Alex Morgan item and a repeat scan skipped creation. Browser API integration and pilot permissions remain pending.
+**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; the live scan created one synthetic Pending Alex Morgan item and a repeat scan skipped creation. Backend activation and its application grants remain pending. End users will not need SharePoint permissions.
 
 ## Configured lists
 
@@ -27,7 +27,7 @@ CandidateKey is required and unique in both lists. SourceStagingId is required a
 
 RecipientAddresses and EvidenceExcerpt are plain multiline text; store recipients as a JSON array of strings. ReceivedAt and ApprovedAt include time; send ISO 8601 UTC values. Other text fields, including the existing ErrorMessage, are single-line text (255 characters). Keep errors concise. Validate key and identifier lengths; never silently truncate identity keys. Agree a deterministic compact key encoding before implementing the flows if the full business/source key exceeds 255 characters.
 
-List configuration and sequential duplicate scan checks are verified. Concurrent unique-key rejection, pilot access, browser API reads, and approval retries remain untested. Existing site permissions were not changed. The proposed list-specific application grants remain pending; see [access plan](setup/entra-access.md).
+List configuration and sequential duplicate scan checks are verified. Concurrent unique-key rejection, backend live reads, and live approval retries remain untested. Existing site permissions were not changed. The proposed list-specific application grants remain pending; see [access plan](setup/entra-access.md).
 
 | List | Purpose |
 |---|---|
@@ -49,7 +49,7 @@ The names below describe the contract; use the verified inventory above for actu
 | ExistingDynamicsContactId | Text, optional; only an actual Dynamics contact ID |
 | SourceMailbox, SourceMessageId, RecipientAddresses | Text; provenance, with recipients stored consistently |
 | ReceivedAt, Subject, EvidenceExcerpt | Date/time and text; short evidence only |
-| AssignedReviewerId | Trusted Entra user identity permitted to review the item |
+| AssignedReviewerId | Optional provenance field; not enforced for this shared demo queue |
 | CandidateKey | For the current contact-only scan: normalised sender email, maximum 255 characters |
 
 For the current contact-only scope, CandidateKey is the normalised sender email, so repeated messages for one missing contact reuse one pending suggestion. Preserve source mailbox/message separately so an edited email does not reproduce the original suggestion. Property/role fields remain available for PM review; existing-contact relationship-gap ingestion is outside scope. The list column's generic description predates this narrower rule; flow logic follows this document.
@@ -62,7 +62,7 @@ For the current contact-only scope, CandidateKey is the normalised sender email,
 | ErrorMessage | Actionable processing or validation failure |
 | ResultItemId | AddedContacts item ID once the durable outcome exists |
 
-Use the built-in list item ID and modification/version metadata. Pending entries are editable through the static app’s delegated Graph adapter; processing entries must not be edited mid-operation.
+Use the built-in list item ID and modification/version metadata. Pending entries are editable through the app’s server-side Graph adapter; processing entries must not be edited mid-operation.
 
 ## AddedContacts fields
 
@@ -82,9 +82,9 @@ Enforce unique final CandidateKey values in AddedContacts and a unique SourceSta
 ## Access and integration
 
 - [ ] Grant the automation connection the list read/write permissions needed for processing.
-- [ ] Grant selected pilot reviewers read/write access to the two demo lists; demo reviewers write approved contacts directly to AddedContacts and delete staging only after confirmation.
-- [ ] Enforce reviewer/item access in SharePoint and enterprise-app assignment, not only through frontend filters. For one shared demo queue, document exactly which pilot users may see it.
-- [ ] Coordinate delegated API permissions and tenant consent for the frontend's selected-list Microsoft Graph reads and writes.
+- [ ] Grant the backend application write access to only ContactStaging and AddedContacts. Users do not need direct SharePoint permissions.
+- [ ] Keep a shared demo queue: every user able to sign in to the single-tenant app can review all suggestions. No reviewer roles, invitations or item-level isolation.
+- [ ] Coordinate Microsoft Graph **application** Lists.SelectedOperations.Selected consent and the backend credential, kept in Azure server settings.
 - [ ] Supply example JSON records and the field/status mapping to Rutesh.
 - [ ] Test duplicate constraints, API reads, access denial, and save-before-delete behaviour with the frontend owner.
 
@@ -94,4 +94,4 @@ Reference: [SharePoint list actions in Power Automate](https://learn.microsoft.c
 
 ## Future Dynamics source
 
-Retain AddedContacts after staging cleanup. It can feed a later Dynamics import/flow, which must recheck email, validate mandatory fields and real target/role IDs, and record import status/result IDs. No import runs in the current demo. Approval metadata is useful demo provenance, not an immutable audit trail when reviewers have direct list write access.
+Retain AddedContacts after staging cleanup. It can feed a later Dynamics import/flow, which must recheck email, validate mandatory fields and real target/role IDs, and record import status/result IDs. No import runs in the current demo. The backend sets ApprovedBy from the validated Entra token and ApprovedAt on the server. Site owners/automation can still edit list items; this is not an immutable production audit trail.

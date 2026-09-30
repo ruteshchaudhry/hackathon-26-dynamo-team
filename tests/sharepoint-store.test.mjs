@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSharePointStore } from '../frontend/sharepoint-store.mjs';
+import { createSharePointStore } from '../api/lib/sharepoint-store.mjs';
 const initial = () => ({ id: '1', eTag: '"1"', fields: { Status: 'Pending', Email: 'alex@example.com', NormalizedEmail: 'alex@example.com', CandidateKey: 'alex@example.com', FirstName: 'Alex', LastName: 'Morgan', TargetLabel: 'Willow Court', RelationshipLabel: 'Resident', TargetId: 'real-property-id', DevelopmentId: 'real-development-id', PremisesId: 'real-premises-id', RelationshipCode: 'resident' } });
 function fixture() {
   const lists = { staging: [initial()], added: [] }, calls = [];

@@ -1,6 +1,6 @@
 # Customer Capture — hackathon POC
 
-A simple contact-review app: Power Automate reads one Outlook inbox, checks live Dynamics data, and stores suggestions in SharePoint. An authorised pilot user reviews and approves suggestions in a static web app. Approved records go to a second SharePoint List to simulate adding contacts. Dynamics remains read-only.
+A simple contact-review app: Power Automate reads one Outlook inbox, checks live Dynamics data, and stores suggestions in SharePoint. An organisational user reviews and approves suggestions in a static web app. Approved records go to a second SharePoint List to simulate adding contacts. Dynamics remains read-only.
 
 **Current build stage:** Use a manually triggered flow with [synthetic email JSON](setup/sample-email.json) until test-inbox access is available. Live Dynamics lookup, AI Builder name extraction and SharePoint staging have passed the missing-contact and repeated-scan tests. See [flow build status](setup/flow-build-status.md) for verified results and remaining work. No external mock email service is required; the demo must label its email source as simulated.
 
@@ -14,7 +14,7 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 | [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
 | [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
 
-The hosted frontend now uses real organisational Entra sign-in. The two selected-list grants are the remaining blocker to shared records; approval will save corrected contacts directly to AddedContacts, then remove staging and refresh the count. No second flow is needed. See [the access setup](setup/entra-access.md).
+The source now uses an Entra-protected JavaScript backend for all SharePoint access. Users need app sign-in only, with no direct SharePoint permissions. Every signed-in tenant user can review the shared queue. The backend saves approved contacts, confirms the result, deletes staging and refreshes the count. No second flow is needed. API scope setup, application consent, a server credential and the two list grants are required before deploying this version; see [the access setup](setup/entra-access.md). The hosted site still runs the earlier delegated build.
 
 ## Hosted demo
 
@@ -28,7 +28,7 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
 
 For offline sample-data development, set `mode` to `demo` in frontend/config.js locally (do not deploy that change). Open http://localhost:8000 and choose **Open sample-data demo**. It uses fictional records stored only in that browser. Review, edit, approve, and rescan sample suggestions; approvals appear in Added contacts. No real mailbox or Dynamics records are changed.
 
-Run `node --test tests/*.test.mjs` for the store checks.
+Run `npm ci --prefix api` and `npm test --prefix api` for API authentication, request validation and store checks.
 
 The app retains the deep blue, light blue and magenta palette, with a generic Customer Capture name and no organisation logos. Theme values live in `frontend/styles.css`. Configured tenant service URLs are retained for integration.
 

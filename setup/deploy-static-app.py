@@ -1,4 +1,4 @@
-"""Publish only frontend/ to the configured hackathon Static Web App.
+"""Publish frontend/ and the managed api/ to the configured hackathon Static Web App.
 
 Requires Azure CLI sign-in, Node.js and npm. No deployment token is saved.
 """
@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    installed = subprocess.run(["npm", "ci", "--prefix", "api", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"], cwd=ROOT)
+    if installed.returncode:
+        return installed.returncode
     result = subprocess.run(
         ["az", "staticwebapp", "secrets", "list", "--subscription", SUBSCRIPTION,
          "--resource-group", RESOURCE_GROUP, "--name", APP_NAME,
@@ -25,10 +28,11 @@ def main():
         print("Could not obtain the deployment credential. Check az login and access to the app.", file=sys.stderr)
         return 1
     env = dict(os.environ, SWA_CLI_DEPLOYMENT_TOKEN=token)
-    print(f"Publishing frontend to {APP_NAME} (production slot)...", flush=True)
+    print(f"Publishing frontend and API to {APP_NAME} (production slot)...", flush=True)
     deployed = subprocess.run(
         ["npm", "exec", "--yes", "--package=@azure/static-web-apps-cli@2.0.10", "--",
          "swa", "deploy", str(ROOT / "frontend"), "--app-name", APP_NAME,
+         "--api-location", str(ROOT / "api"), "--api-language", "node", "--api-version", "22",
          "--env", "production", "--no-use-keychain"],
         cwd=ROOT, env=env, capture_output=True, text=True,
     )

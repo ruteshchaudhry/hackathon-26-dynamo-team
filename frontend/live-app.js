@@ -1,5 +1,6 @@
 import { config } from './config.js';
-import { createSharePointStore, reviewedFields } from './sharepoint-store.mjs';
+import { createApiStore, reviewedFields } from './api-store.mjs';
+import { resumeSignIn, beginSignIn, markSignedOut } from './session.mjs';
 const $ = id => document.getElementById(id);
 const node = (tag, text, className) => { const el = document.createElement(tag); el.textContent = text; if (className) el.className = className; return el; };
 let auth, account, store, active, busy = false, signedIn = false, loaded = false;
@@ -7,7 +8,7 @@ let state = { pending: [], added: [] };
 const selected = new Set();
 const form = $('review-form');
 const fields = { email: 'Email', firstName: 'FirstName', lastName: 'LastName', targetId: 'TargetLabel', role: 'RelationshipLabel' };
-const scopes = ['https://graph.microsoft.com/Lists.SelectedOperations.Selected'];
+const scopes = [config.apiScope];
 const notify = (message, error = false) => { $('feedback').textContent = message; $('feedback').className = error ? 'error' : 'success'; };
 const welcomeError = node('p', '', 'error'); welcomeError.setAttribute('role', 'alert'); $('enter').after(welcomeError);
 const retryState = row => ['Processing', 'CleanupPending'].includes(row.fields.Status);
@@ -15,15 +16,15 @@ const valid = row => { try { reviewedFields(row.fields); return true; } catch { 
 
 // This path never loads the fixture adapter or persists SharePoint records in browser storage.
 document.querySelector('.notice strong').textContent = 'Shared contact review';
-document.querySelector('.notice p').textContent = 'Sign in to review shared SharePoint suggestions and save approved demo contacts.';
+document.querySelector('.notice p').textContent = 'Review contact suggestions, make corrections and add approved contacts.';
 document.querySelector('.welcome-copy > .muted').textContent = 'For authorised organisational users.';
-$('enter').textContent = 'Sign in with Microsoft';
+$('enter').textContent = 'Continue with work account';
 $('leave').textContent = 'Sign out'; $('scan').textContent = 'Refresh records'; $('reset').hidden = true;
-document.querySelector('.mode-banner strong').textContent = 'Shared SharePoint demo';
-document.querySelector('.mode-banner span').textContent = 'Approved contacts are saved in SharePoint · Dynamics is unchanged';
+document.querySelector('.mode-banner strong').textContent = 'Contact review';
+document.querySelector('.mode-banner span').textContent = 'Review suggestions and keep your contact list up to date';
 document.querySelector('.stats > div:last-child > span').textContent = 'Approved contacts created';
-document.querySelector('footer p').textContent = 'Scans run in Power Automate. Refresh to load their suggestions. Approval saves corrected contacts in SharePoint.';
-document.querySelector('#review-form > .muted').textContent = 'Save the corrected contact to SharePoint. Property and relationship descriptions are optional for this contact-only demo; Dynamics links are not validated here.';
+document.querySelector('footer p').textContent = 'Refresh to see new suggestions. Review and approve to add them to your contacts.';
+document.querySelector('#review-form > .muted').textContent = 'Check the details before adding this contact. Property and relationship are optional.';
 document.querySelector('.evidence .eyebrow').textContent = 'EMAIL EVIDENCE';
 for (const name of ['targetId', 'role']) {
   const input = document.createElement('input'); input.name = name; input.maxLength = 255;
@@ -34,7 +35,7 @@ function render() {
   $('review-nav').removeAttribute('aria-current'); $('added-nav').removeAttribute('aria-current');
   $(added ? 'added-nav' : 'review-nav').setAttribute('aria-current', 'page');
   $('page-title').textContent = added ? 'Added contacts' : 'Pending review';
-  $('page-description').textContent = added ? 'Corrected contacts approved and saved in SharePoint.' : 'Review the details, then approve to move a contact out of staging.';
+  $('page-description').textContent = added ? 'Contacts you have reviewed and added.' : 'Review the details, then approve to add a contact.';
   $('list-title').textContent = added ? 'Approved contacts' : 'Contact suggestions';
   $('pending-count').textContent = $('nav-count').textContent = state.pending.length;
   $('added-count').textContent = state.added.filter(row => row.fields.SimulatedContactCreated === true).length;
@@ -57,7 +58,7 @@ function render() {
     const person = node('td', ''); person.append(node('strong', [f.FirstName, f.LastName].filter(Boolean).join(' ') || 'Name not provided'), node('small', f.Email || 'Email needed'));
     const property = node('td', ''); property.append(node('strong', f.TargetLabel || 'Not provided'), node('small', f.RelationshipLabel || 'Relationship not provided'));
     const status = node('td', ''); status.append(node('span', added ? (f.SimulatedContactCreated === true ? 'Contact saved' : 'Existing contact') : (f.Status || 'Pending'), 'tag'));
-    if (!added && f.ErrorMessage) status.append(node('small', f.ErrorMessage));
+    if (!added && f.ErrorMessage) status.append(node('small', 'This contact needs attention. Open it to review or retry.'));
     const action = node('td', '');
     if (added) action.append(node('small', f.ApprovedAt ? new Date(f.ApprovedAt).toLocaleString() : 'Not recorded'));
     else {
@@ -68,11 +69,11 @@ function render() {
   }
   $('empty').hidden = rows.length > 0;
   $('empty-title').textContent = query ? 'No matching contacts' : added ? 'No approved contacts yet' : "You're all caught up";
-  $('empty-description').textContent = query ? 'Try another name, email or property.' : added ? 'Approved SharePoint contacts will appear here.' : 'Refresh after running the sample-email flow.';
+  $('empty-description').textContent = query ? 'Try another name, email or property.' : added ? 'Your approved contacts will appear here.' : 'Refresh to check for new suggestions.';
   if (!loaded) {
     for (const id of ['pending-count','nav-count','added-count','incomplete-count']) $(id).textContent = '—';
     $('empty-title').textContent = busy ? 'Loading shared records…' : 'Records are unavailable';
-    $('empty-description').textContent = 'Refresh to load the lists from SharePoint.';
+    $('empty-description').textContent = 'Refresh to load your contacts.';
   }
 }
 async function refresh() {
@@ -80,7 +81,7 @@ async function refresh() {
   catch (error) {
     loaded = false; state = { pending: [], added: [] }; selected.clear(); render();
     for (const id of ['pending-count','nav-count','added-count','incomplete-count']) $(id).textContent = '—';
-    $('empty-title').textContent = 'Records could not be loaded'; $('empty-description').textContent = 'Refresh after resolving the connection or access issue.';
+    $('empty-title').textContent = 'Records could not be loaded'; $('empty-description').textContent = 'Please try again shortly or contact the app owner.';
     throw error;
   }
 }
@@ -111,7 +112,7 @@ form.addEventListener('submit', async event => {
     let message = 'Changes saved for later review.';
     if (approve) {
       const result = await store.approve(active);
-      message = result.cleanupPending ? 'Contact saved in AddedContacts. Staging cleanup needs a retry; another contact will not be created.' : 'Contact saved in AddedContacts and removed from staging.';
+      message = result.cleanupPending ? 'Contact added. Retry to finish removing it from pending review; it will not be added twice.' : 'Contact added and removed from pending review.';
     }
     $('review-dialog').close(); await refresh(); notify(message);
   } catch (error) {
@@ -123,23 +124,24 @@ $('close-dialog').addEventListener('click', () => $('review-dialog').close());
 $('review-dialog').addEventListener('cancel', event => { if (busy) event.preventDefault(); });
 $('search').addEventListener('input', render);
 window.addEventListener('hashchange', () => { selected.clear(); $('search').value = ''; if (signedIn) render(); });
-$('scan').addEventListener('click', () => operation(async () => { await refresh(); notify('Shared SharePoint records refreshed.'); }));
+$('scan').addEventListener('click', () => operation(async () => { await refresh(); notify('Contacts refreshed.'); }));
 $('approve-selected').addEventListener('click', () => operation(async () => {
   const rows = state.pending.filter(row => selected.has(row.id)); let completed = 0, cleanup = 0; const errors = [];
   for (const row of rows) {
     try { const result = await store.approve(row); completed++; if (result.cleanupPending) cleanup++; }
     catch (error) { errors.push(`${row.fields.Email}: ${error.message}`); }
   }
-  await refresh(); notify(`${completed} approval${completed === 1 ? '' : 's'} confirmed.${cleanup ? ` ${cleanup} staging cleanup retries needed.` : ''}${errors.length ? ` ${errors.join(' ')}` : ''}`, errors.length > 0);
+  await refresh(); notify(`${completed} approval${completed === 1 ? '' : 's'} confirmed.${cleanup ? ` ${cleanup} pending items need a retry.` : ''}${errors.length ? ` ${errors.join(' ')}` : ''}`, errors.length > 0);
 }));
 $('leave').addEventListener('click', async () => {
+  markSignedOut(sessionStorage);
   signedIn = false; state = { pending: [], added: [] }; selected.clear(); render(); $('workspace').hidden = true; $('welcome').hidden = false;
   try { await auth.logoutRedirect({ account, postLogoutRedirectUri: `${location.origin}/` }); } catch (error) { welcomeError.textContent = 'Sign-out could not complete. Close this tab to clear the session.'; }
 });
 async function startSession(nextAccount) {
   if (nextAccount.tenantId !== config.tenantId) throw new Error('Use an authorised account from the configured organisation.');
   account = nextAccount; auth.setActiveAccount(account);
-  store = createSharePointStore({ config, reviewerId: account.localAccountId, getToken: async () => {
+  store = createApiStore({ getToken: async () => {
     try { return (await auth.acquireTokenSilent({ scopes, account })).accessToken; }
     catch { throw new Error('Sign-in or consent is required. Sign out and sign in again.'); }
   } });
@@ -151,16 +153,17 @@ async function startSession(nextAccount) {
 }
 $('enter').addEventListener('click', async () => {
   try {
-    if (!auth) throw new Error('Organisational sign-in is awaiting configuration.');
-    await auth.loginRedirect({ scopes, prompt: 'select_account' });
-  } catch (error) { welcomeError.textContent = error.message; }
+    if (!auth) throw new Error('Sign-in is not ready yet. Please contact the app owner.');
+    await beginSignIn(auth, scopes, sessionStorage);
+  } catch (error) { welcomeError.textContent = 'We could not sign you in. Please try Continue with work account again.'; }
 });
 try {
-  if (!config.tenantId || !config.clientId || !config.siteId) throw new Error('Organisational sign-in is awaiting configuration.');
-  await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = './vendor/msal-browser-5.23.0.min.js'; script.onload = resolve; script.onerror = () => reject(new Error('The sign-in library could not load.')); document.head.append(script); });
+  if (!config.tenantId || !config.clientId || !config.apiScope) throw new Error('Sign-in is not ready yet. Please contact the app owner.');
+  await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = './vendor/msal-browser-5.23.0.min.js'; script.onload = resolve; script.onerror = () => reject(new Error('Sign-in could not load. Please refresh and try again.')); document.head.append(script); });
   auth = new window.msal.PublicClientApplication({ auth: { clientId: config.clientId, authority: `https://login.microsoftonline.com/${config.tenantId}`, redirectUri: `${location.origin}/` }, cache: { cacheLocation: 'sessionStorage' } });
   await auth.initialize();
   const response = await auth.handleRedirectPromise();
   const existing = response?.account || auth.getActiveAccount() || auth.getAllAccounts().find(item => item.tenantId === config.tenantId);
-  if (existing) await startSession(existing);
-} catch (error) { welcomeError.textContent = error.message; }
+  const restored = existing || await resumeSignIn(auth, scopes, sessionStorage);
+  if (restored) await startSession(restored);
+} catch (error) { welcomeError.textContent = 'We could not sign you in. Please try Continue with work account again.'; }
