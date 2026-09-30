@@ -1,0 +1,122 @@
+[
+  {
+    "id": "hackathon-test-001",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "abid.sharif@odevo.com",
+    "senderName": "Abid Sharif",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:00:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Abid\nLastName: Sharif\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-002",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "james.robey@odevo.com",
+    "senderName": "James Robey",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:05:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: James\nLastName: Robey\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-003",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "jane.smith@example.com",
+    "senderName": "Jane Smith",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:10:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Jane\nLastName: Smith\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-004",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "marc@sample.com",
+    "senderName": "Marc Collins",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:15:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Marc\nLastName: Collins\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-005",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "nicky.temperley@odevo.com",
+    "senderName": "Nicky Temperley",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:20:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Nicky\nLastName: Temperley\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-006",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "avery.finch@sample.com",
+    "senderName": "Avery Finch",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:25:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Avery\nLastName: Finch\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-007",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "casey.marlow@sample.com",
+    "senderName": "Casey Marlow",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:30:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Casey\nLastName: Marlow\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-008",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "rowan.kestrel@sample.com",
+    "senderName": "Rowan Kestrel",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:35:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Rowan\nLastName: Kestrel\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-009",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "ellis.wren@sample.com",
+    "senderName": "Ellis Wren",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:40:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Ellis\nLastName: Wren\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  },
+  {
+    "id": "hackathon-test-010",
+    "sourceMailbox": "mock-inbox@example.com",
+    "from": "morgan.ashby@sample.com",
+    "senderName": "Morgan Ashby",
+    "to": [
+      "pm.demo@example.com"
+    ],
+    "receivedAt": "2026-09-30T05:45:00Z",
+    "subject": "[SAMPLE] Property DEMO-001 - resident contact",
+    "body": "Synthetic hackathon email. FirstName: Morgan\nLastName: Ashby\nPropertyReference: DEMO-001\nRelationship: Resident\nPlease record my contact details for this property."
+  }
+]
