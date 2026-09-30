@@ -92,7 +92,7 @@ def main():
     token = bridge.backend.token(bridge.CRM)
     path = f'/api/data/v9.2/workflows({WORKFLOW_ID})'
     row = bridge.call(bridge.CRM, token, path + '?$select=name,clientdata')
-    if row['name'] != 'Customer Capture - Scan sample emails':
+    if row['name'] != 'Dynamine - Scan sample emails':
         raise ValueError('Unexpected scanner identity.')
     client = json.loads(row['clientdata'])
     client['properties']['definition'] = transform(client['properties']['definition'], samples)

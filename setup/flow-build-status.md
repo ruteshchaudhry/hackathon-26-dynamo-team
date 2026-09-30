@@ -13,7 +13,7 @@
 - Unsigned requests to read or approve records are rejected.
 - **34 app checks and 3 batch-loader checks pass**, covering sign-in, validation, duplicate protection, outdated edits, failed saves and cleanup retries.
 
-The new **Customer Capture - Contact data** flow is active. This route does not depend on the previously outstanding Graph application consent.
+The new **Dynamine - Contact data** flow is active. This route does not depend on the previously outstanding Graph application consent.
 
 ## JSON batch test
 

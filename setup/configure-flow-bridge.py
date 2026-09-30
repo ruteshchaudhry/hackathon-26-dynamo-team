@@ -13,7 +13,7 @@ ENV='ae00c6cc-145f-41ea-bf30-1f0979a559c6'
 CRM='https://rendallandrittner-predev.crm11.dynamics.com'
 FLOW='https://api.flow.microsoft.com'
 FLOW_ROOT=f'/providers/Microsoft.ProcessSimple/environments/{ENV}/flows'
-NAME='Customer Capture - Contact data'
+NAME='Dynamine - Contact data'
 META=ROOT/'setup/flows/contact-data-bridge.json'
 
 def call(base,token,path,method='GET',body=None,headers=None):
@@ -42,7 +42,7 @@ def main():
             wid=rows[0]['workflowid']
             call(CRM,crm,f'/api/data/v9.2/workflows({wid})','PATCH',{'clientdata':json.dumps(clientdata)})
         else:
-            row=call(CRM,crm,'/api/data/v9.2/workflows','POST',{'category':5,'name':NAME,'type':1,'primaryentity':'none','description':'Demo backend data bridge using the existing connection, restricted to the two Customer Capture Demo lists.','clientdata':json.dumps(clientdata)}, {'Prefer':'return=representation'})
+            row=call(CRM,crm,'/api/data/v9.2/workflows','POST',{'category':5,'name':NAME,'type':1,'primaryentity':'none','description':'Demo backend data bridge using the existing connection, restricted to the two demo lists.','clientdata':json.dumps(clientdata)}, {'Prefer':'return=representation'})
             wid=row['workflowid']
         solution=call(CRM,crm,'/api/data/v9.2/solutions(b13fb656-0cbc-f111-aaae-000d3a8730d1)?$select=uniquename')
         call(CRM,crm,'/api/data/v9.2/AddSolutionComponent','POST',{'ComponentId':wid,'ComponentType':29,'SolutionUniqueName':solution['uniquename'],'AddRequiredComponents':False})

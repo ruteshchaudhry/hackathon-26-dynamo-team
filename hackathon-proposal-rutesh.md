@@ -1,4 +1,4 @@
-# Customer Capture: hackathon proposal
+# Dynamine: hackathon proposal
 
 Author: Rutesh Chaudhary. Updated 30 September 2026.
 

@@ -55,7 +55,7 @@ def main():
     scope = next((item for item in scopes if item['value'] == 'access_as_user'), None)
     if not scope:
         scope = {'id': str(uuid.uuid4()), 'value': 'access_as_user', 'type': 'Admin', 'isEnabled': True,
-                 'adminConsentDisplayName': 'Access Customer Capture',
+                 'adminConsentDisplayName': 'Access Dynamine',
                  'adminConsentDescription': 'Review and approve demo contact suggestions.'}
         scopes.append(scope)
     api['oauth2PermissionScopes'] = scopes

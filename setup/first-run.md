@@ -1,6 +1,6 @@
 # Present or test the demo
 
-1. [Open Customer Capture](https://kind-ground-0ee249903.5.azurestaticapps.net/).
+1. [Open Dynamine](https://kind-ground-0ee249903.5.azurestaticapps.net/).
 2. Use **Continue with work account** if you are not signed in automatically.
 3. Open **Pending review**, then **Review**.
 4. Check the email and names. Add or correct property and relationship descriptions if known.
@@ -13,7 +13,7 @@ The prepared demo includes sample contacts awaiting review. Email content is sim
 
 ## Add a new suggestion
 
-The flow owner runs **Customer Capture - Scan sample emails**, then you choose **Refresh records**. The flow processes the 10 entries in [test-emails.json](test-emails.json). Existing contacts are skipped; missing contacts become review suggestions. Re-running the batch should not create duplicates. No email is sent.
+The flow owner runs **Dynamine - Scan sample emails**, then you choose **Refresh records**. The flow processes the 10 entries in [test-emails.json](test-emails.json). Existing contacts are skipped; missing contacts become review suggestions. Re-running the batch should not create duplicates. No email is sent.
 
 ## Explain this during the presentation
 

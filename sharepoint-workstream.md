@@ -2,7 +2,7 @@
 
 Owner: list owner / Rutesh.
 
-The two lists are ready on [Customer Capture Demo](https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/). Do not recreate them.
+The two lists are ready on [demo site](https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/). Do not recreate them.
 
 | List | Purpose |
 |---|---|

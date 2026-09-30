@@ -6,8 +6,8 @@ Two flows are used in the demo:
 
 | Flow | What it does |
 |---|---|
-| Customer Capture - Scan sample emails | Checks the 10 test emails against Dynamics and creates suggestions for missing senders |
-| Customer Capture - Contact data | Lets the app read and save shared records through the existing owner's connection |
+| Dynamine - Scan sample emails | Checks the 10 test emails against Dynamics and creates suggestions for missing senders |
+| Dynamine - Contact data | Lets the app read and save shared records through the existing owner's connection |
 
 ## Scan behaviour
 

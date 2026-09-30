@@ -1,6 +1,6 @@
 # Hosting and updates
 
-[Customer Capture is hosted here](https://kind-ground-0ee249903.5.azurestaticapps.net/).
+[Dynamine is hosted here](https://kind-ground-0ee249903.5.azurestaticapps.net/).
 
 The existing Azure Static Web App hosts the page and its private API on the Free plan. No local Python server is needed for the shared demo. Existing Power Automate and AI Builder entitlements are separate from website hosting.
 

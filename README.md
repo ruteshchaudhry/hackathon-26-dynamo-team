@@ -1,4 +1,4 @@
-# Customer Capture
+# Dynamine
 
 Find missing contacts from email, review their details, and approve them into a shared demo contact list.
 
@@ -21,7 +21,7 @@ The flow owner runs the sample scan; app users choose **Refresh records**. Real 
 
 ## Team recording
 
-[Open the background diagram and timed speaker notes](demo/background-walkthrough.html) after downloading the file, or use the [diagram image](demo/background-overview.png) and [2½-minute script](demo/presenter-notes.txt). The page is self-contained and opens locally in a browser.
+[Open the recording diagram](demo/background-walkthrough.html) after downloading the file, or use the [diagram image](demo/background-overview.png). The page is self-contained and opens locally in a browser.
 
 ## Team guides
 
