@@ -188,7 +188,21 @@ const seeds: Seed[] = [
     "Are you paying too much for communal energy? Our brokers can cut your costs by up to 40%. Book a free call today!"],
 ];
 
-export const INBOX: EmailMessage[] = seeds.map(([senderName, senderEmail, subject, receivedAt, category, body], i) => ({
+// Sent after the scan window so the invitation is not included in its own scan.
+export const SYNC_INVITATION: EmailMessage = {
+  id: "contact-sync-invitation",
+  mailboxId: MAILBOX,
+  senderName: "Contact Capture",
+  senderEmail: "noreply@company.co.uk",
+  recipientEmail: MAILBOX,
+  subject: "Your contacts are ready to review and sync",
+  body: "Hi Alex,\n\nYour latest inbox scan has found 8 potential new customer contacts. Review their details and choose which ones to add to Dynamics.\n\nUse your personal link below to open your contact sync page.",
+  receivedAt: "2026-03-16T09:00",
+  category: "Automated",
+  processedStatus: "Unprocessed",
+};
+
+export const INBOX: EmailMessage[] = [SYNC_INVITATION, ...seeds.map(([senderName, senderEmail, subject, receivedAt, category, body], i): EmailMessage => ({
   id: `msg-${String(i + 1).padStart(3, "0")}`,
   mailboxId: MAILBOX,
   senderName,
@@ -199,7 +213,7 @@ export const INBOX: EmailMessage[] = seeds.map(([senderName, senderEmail, subjec
   receivedAt,
   category,
   processedStatus: "Unprocessed",
-}));
+}))];
 
 // Suggested values that a real extraction step would produce from email content.
 export const EXTRACTED_SUGGESTIONS: Record<
@@ -222,4 +236,3 @@ export function formatUkDateTime(iso: string) {
   const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   return `${date}, ${time}`;
 }
-

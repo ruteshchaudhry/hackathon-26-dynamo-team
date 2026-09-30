@@ -5,6 +5,7 @@
  */
 import { useSyncExternalStore } from "react";
 import type { RelationshipType } from "@/lib/mock-data";
+import type { SyncState } from "@/lib/dynamine-store";
 
 export interface CreatedContact {
   id: string;
@@ -12,7 +13,8 @@ export interface CreatedContact {
   lastName: string;
   emailAddress: string;
   premisesId: string;
-  relationshipType: RelationshipType;
+  relationshipType: RelationshipType | "";
+  relatedPremises?: string;
   relationshipId: string;
   sourceMessageId?: string | undefined;
   createdAt: string;
@@ -24,6 +26,7 @@ export interface DemoState {
   readMessageIds: string[];
   lastAddedIds: string[];
   resetCount: number;
+  sync: SyncState | null;
 }
 
 const initial = (): DemoState => ({
@@ -32,6 +35,7 @@ const initial = (): DemoState => ({
   readMessageIds: [],
   lastAddedIds: [],
   resetCount: 0,
+  sync: null,
 });
 
 let state: DemoState = initial();
@@ -59,4 +63,3 @@ function subscribe(l: () => void) {
 export function useDemoState() {
   return useSyncExternalStore(subscribe, getDemoState, () => serverSnapshot);
 }
-
