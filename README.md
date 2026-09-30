@@ -19,6 +19,10 @@ The scan currently uses a **sample email**, checks **live Dynamics data**, and s
 
 The flow owner runs the sample scan; app users choose **Refresh records**. Real inbox scanning, daily summaries and a Scan now button are not connected yet.
 
+## Standalone UI prototypes
+
+Two additional [Contact Capture demos](demos/README.md) let the team compare the original review flow with a version embedded in simulated Outlook and Dynamics screens. Both run locally using sample data and are separate from the shared app above.
+
 ## Team guides
 
 | Guide | Who it helps |
