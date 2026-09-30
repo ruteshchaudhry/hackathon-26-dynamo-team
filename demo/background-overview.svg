@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">Customer Capture: how the background works</title>
+<desc id="desc">Flow 1 processes sample JSON emails, checks live Dynamics contacts by email, suggests names with AI and checks both SharePoint lists before adding a missing contact to ContactStaging. The user accesses the app with company sign-in. The API controls approval and calls Flow 2 for list access. Approved contacts are saved to AddedContacts and verified before the pending item is deleted. Dynamics remains read-only.</desc>
+<defs>
+ <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#24428a"/></marker>
+ <marker id="pinkArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b52576"/></marker>
+ <style>
+ text{font-family:Inter,Arial,sans-serif;fill:#24334a} .eyebrow{font-size:17px;font-weight:700;letter-spacing:2px;fill:#24428a} .title{font-size:46px;font-weight:700;letter-spacing:-1px} .h{font-size:25px;font-weight:700;fill:#24428a} .body{font-size:22px} .small{font-size:18px;fill:#52627a} .white{fill:white} .line{fill:none;stroke:#24428a;stroke-width:3;marker-end:url(#arrow)} .both{fill:none;stroke:#24428a;stroke-width:3;marker-start:url(#arrow);marker-end:url(#arrow)}
+ </style>
+</defs>
+<rect width="1600" height="900" fill="#f7f9fc"/>
+<rect width="1600" height="9" fill="#24428a"/>
+<text x="60" y="52" class="eyebrow">CUSTOMER CAPTURE · BEHIND THE SCENES</text>
+<text x="60" y="110" class="title">From email to a reviewed contact</text>
+<text x="60" y="150" class="body" fill="#52627a">Two flows, shared records and a human decision before anything is added.</text>
+
+<text x="60" y="210" class="eyebrow">1 · DISCOVER</text>
+<rect x="60" y="260" width="230" height="110" rx="12" fill="#e7f1fb" stroke="#9bc4e9"/>
+<text x="80" y="301" class="h">10 test emails</text>
+<text x="80" y="337" class="small">JSON sample batch</text>
+<text x="60" y="399" class="small">Manual test run · one at a time</text>
+<path d="M290 315 H339" class="line"/>
+
+<rect x="340" y="215" width="650" height="200" rx="12" fill="#24428a"/>
+<text x="367" y="252" class="h white">Flow 1 · Scan sample emails</text>
+<text x="367" y="297" class="body white">1. Check sender email against Dynamics</text>
+<text x="367" y="340" class="body white">2. If missing, use AI to suggest names</text>
+<text x="367" y="383" class="body white">3. Check both lists to avoid duplicates</text>
+<path d="M990 315 H1170" class="line"/>
+<text x="1010" y="294" class="small">New suggestion</text>
+<path d="M490 419 V443" class="both"/>
+<rect x="340" y="449" width="310" height="85" rx="12" fill="#e7f1fb" stroke="#9bc4e9"/>
+<text x="362" y="484" class="h">Dynamics / Dataverse</text>
+<text x="362" y="514" class="small">Live email lookup · read only</text>
+<text x="690" y="480" class="body">Contact found? Skip this email.</text>
+<text x="690" y="515" class="small">Lookup fails? Do not create a suggestion.</text>
+
+<rect x="1175" y="215" width="365" height="320" rx="14" fill="#fff" stroke="#8fa8cf" stroke-width="2"/>
+<text x="1199" y="250" class="h">SharePoint · two lists</text>
+<rect x="1199" y="269" width="317" height="91" rx="9" fill="#e7f1fb"/>
+<text x="1219" y="307" class="h">Pending review</text>
+<text x="1219" y="340" class="small">ContactStaging</text>
+<rect x="1199" y="399" width="317" height="91" rx="9" fill="#fcebf5"/>
+<text x="1219" y="438" class="h">Approved contacts</text>
+<text x="1219" y="471" class="small">AddedContacts · demo records</text>
+<text x="1199" y="519" class="small">Shared across app users</text>
+
+<text x="60" y="571" class="eyebrow">2 · REVIEW &amp; SAVE</text>
+<rect x="60" y="589" width="270" height="108" rx="12" fill="#fff" stroke="#8fa8cf" stroke-width="2"/>
+<text x="81" y="627" class="h">User accesses app</text>
+<text x="81" y="657" class="small">Company sign-in</text>
+<text x="81" y="682" class="small">Review, correct and approve</text>
+<path d="M335 643 H373" class="both"/>
+<rect x="380" y="589" width="305" height="108" rx="12" fill="#24428a"/>
+<text x="402" y="627" class="h white">Backend API</text>
+<text x="402" y="657" class="small white">Validate company sign-in</text>
+<text x="402" y="682" class="small white">Control approval order</text>
+<path d="M692 643 H743" class="both"/>
+<rect x="750" y="589" width="330" height="108" rx="12" fill="#24428a"/>
+<text x="772" y="627" class="h white">Flow 2 · Contact data</text>
+<text x="772" y="657" class="small white">Read, update, create and delete</text>
+<text x="772" y="682" class="small white">Uses the owner's connection</text>
+<path d="M1087 643 H1355 V542" class="both"/>
+<text x="1140" y="624" class="small">Access to both lists</text>
+
+<text x="60" y="750" class="eyebrow" style="fill:#b52576">API APPROVAL ORDER</text>
+<text x="60" y="789" class="body">Save approved contact</text>
+<path d="M305 781 H365" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="389" y="789" class="body">Confirm it is saved</text>
+<path d="M595 781 H655" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="677" y="789" class="body">Remove pending item</text>
+<path d="M913 781 H973" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="997" y="789" class="body">Refresh the saved-contact count</text>
+<line x1="60" y1="822" x2="1540" y2="822" stroke="#d5deed"/>
+<text x="60" y="852" class="body">VERIFIED TEST: 10 emails · 5 existing skipped · 5 suggestions staged · 0 duplicates on repeat</text>
+<text x="60" y="881" class="small">DEMO: JSON email input · Live Dynamics lookup · Approvals stay in SharePoint. Outlook ingestion and Dynamics writes are next.</text>
+</svg>

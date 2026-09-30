@@ -19,6 +19,10 @@ The scan currently uses **[10 sample emails](setup/test-emails.json)**, checks *
 
 The flow owner runs the sample scan; app users choose **Refresh records**. Real inbox scanning, daily summaries and a Scan now button are not connected yet.
 
+## Team recording
+
+[Open the background diagram and timed speaker notes](demo/background-walkthrough.html) after downloading the file, or use the [diagram image](demo/background-overview.png) and [2½-minute script](demo/presenter-notes.txt). The page is self-contained and opens locally in a browser.
+
 ## Team guides
 
 | Guide | Who it helps |

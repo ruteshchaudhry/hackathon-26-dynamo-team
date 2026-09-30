@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Customer Capture — Background walkthrough</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eaf0f8;color:#24334a;font:18px/1.55 system-ui,-apple-system,Arial,sans-serif}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;background:white}.toolbar strong{margin-right:auto;color:#24428a}.toolbar button,.toolbar a{font:inherit;font-size:15px;padding:8px 14px;border:1px solid #9aaece;border-radius:6px;background:white;color:#24428a;cursor:pointer;text-decoration:none}.toolbar button:focus-visible,.toolbar a:focus-visible{outline:3px solid #cf368c;outline-offset:3px}#diagram{width:100%;background:#f7f9fc;display:grid;place-items:center}#diagram svg{display:block;width:100%;height:auto;max-height:calc(100vh - 76px)}#diagram:fullscreen{background:#f7f9fc}#diagram:fullscreen svg{max-height:100vh}#notes{max-width:1000px;margin:32px auto;padding:28px;background:white;border-radius:12px}h1,h2{color:#24428a;line-height:1.2}h1{font-size:28px}h2{font-size:22px}p{margin:16px 0}.cue{font-size:16px;color:#52627a;margin-bottom:4px}.handoff{border-left:4px solid #cf368c;padding-left:18px}.facts{color:#52627a} [hidden]{display:none!important}@media print{.toolbar{display:none}body{background:white}#diagram{break-after:page}#diagram svg{max-height:none}#notes{display:block!important;margin:0;padding:20px} @page{size:landscape;margin:8mm}}
+</style></head><body>
+<nav class="toolbar" aria-label="Presentation controls"><strong>Background walkthrough</strong><button id="full" type="button">Full screen diagram</button><button id="toggle" type="button" aria-expanded="false" aria-controls="notes">Show speaker notes</button><button id="export-svg" type="button">Download SVG</button></nav>
+<main><section id="diagram" aria-label="System diagram"><svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">Customer Capture: how the background works</title>
+<desc id="desc">Flow 1 processes sample JSON emails, checks live Dynamics contacts by email, suggests names with AI and checks both SharePoint lists before adding a missing contact to ContactStaging. The user accesses the app with company sign-in. The API controls approval and calls Flow 2 for list access. Approved contacts are saved to AddedContacts and verified before the pending item is deleted. Dynamics remains read-only.</desc>
+<defs>
+ <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#24428a"/></marker>
+ <marker id="pinkArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b52576"/></marker>
+ <style>
+ text{font-family:Inter,Arial,sans-serif;fill:#24334a} .eyebrow{font-size:17px;font-weight:700;letter-spacing:2px;fill:#24428a} .title{font-size:46px;font-weight:700;letter-spacing:-1px} .h{font-size:25px;font-weight:700;fill:#24428a} .body{font-size:22px} .small{font-size:18px;fill:#52627a} .white{fill:white} .line{fill:none;stroke:#24428a;stroke-width:3;marker-end:url(#arrow)} .both{fill:none;stroke:#24428a;stroke-width:3;marker-start:url(#arrow);marker-end:url(#arrow)}
+ </style>
+</defs>
+<rect width="1600" height="900" fill="#f7f9fc"/>
+<rect width="1600" height="9" fill="#24428a"/>
+<text x="60" y="52" class="eyebrow">CUSTOMER CAPTURE · BEHIND THE SCENES</text>
+<text x="60" y="110" class="title">From email to a reviewed contact</text>
+<text x="60" y="150" class="body" fill="#52627a">Two flows, shared records and a human decision before anything is added.</text>
+
+<text x="60" y="210" class="eyebrow">1 · DISCOVER</text>
+<rect x="60" y="260" width="230" height="110" rx="12" fill="#e7f1fb" stroke="#9bc4e9"/>
+<text x="80" y="301" class="h">10 test emails</text>
+<text x="80" y="337" class="small">JSON sample batch</text>
+<text x="60" y="399" class="small">Manual test run · one at a time</text>
+<path d="M290 315 H339" class="line"/>
+
+<rect x="340" y="215" width="650" height="200" rx="12" fill="#24428a"/>
+<text x="367" y="252" class="h white">Flow 1 · Scan sample emails</text>
+<text x="367" y="297" class="body white">1. Check sender email against Dynamics</text>
+<text x="367" y="340" class="body white">2. If missing, use AI to suggest names</text>
+<text x="367" y="383" class="body white">3. Check both lists to avoid duplicates</text>
+<path d="M990 315 H1170" class="line"/>
+<text x="1010" y="294" class="small">New suggestion</text>
+<path d="M490 419 V443" class="both"/>
+<rect x="340" y="449" width="310" height="85" rx="12" fill="#e7f1fb" stroke="#9bc4e9"/>
+<text x="362" y="484" class="h">Dynamics / Dataverse</text>
+<text x="362" y="514" class="small">Live email lookup · read only</text>
+<text x="690" y="480" class="body">Contact found? Skip this email.</text>
+<text x="690" y="515" class="small">Lookup fails? Do not create a suggestion.</text>
+
+<rect x="1175" y="215" width="365" height="320" rx="14" fill="#fff" stroke="#8fa8cf" stroke-width="2"/>
+<text x="1199" y="250" class="h">SharePoint · two lists</text>
+<rect x="1199" y="269" width="317" height="91" rx="9" fill="#e7f1fb"/>
+<text x="1219" y="307" class="h">Pending review</text>
+<text x="1219" y="340" class="small">ContactStaging</text>
+<rect x="1199" y="399" width="317" height="91" rx="9" fill="#fcebf5"/>
+<text x="1219" y="438" class="h">Approved contacts</text>
+<text x="1219" y="471" class="small">AddedContacts · demo records</text>
+<text x="1199" y="519" class="small">Shared across app users</text>
+
+<text x="60" y="571" class="eyebrow">2 · REVIEW &amp; SAVE</text>
+<rect x="60" y="589" width="270" height="108" rx="12" fill="#fff" stroke="#8fa8cf" stroke-width="2"/>
+<text x="81" y="627" class="h">User accesses app</text>
+<text x="81" y="657" class="small">Company sign-in</text>
+<text x="81" y="682" class="small">Review, correct and approve</text>
+<path d="M335 643 H373" class="both"/>
+<rect x="380" y="589" width="305" height="108" rx="12" fill="#24428a"/>
+<text x="402" y="627" class="h white">Backend API</text>
+<text x="402" y="657" class="small white">Validate company sign-in</text>
+<text x="402" y="682" class="small white">Control approval order</text>
+<path d="M692 643 H743" class="both"/>
+<rect x="750" y="589" width="330" height="108" rx="12" fill="#24428a"/>
+<text x="772" y="627" class="h white">Flow 2 · Contact data</text>
+<text x="772" y="657" class="small white">Read, update, create and delete</text>
+<text x="772" y="682" class="small white">Uses the owner's connection</text>
+<path d="M1087 643 H1355 V542" class="both"/>
+<text x="1140" y="624" class="small">Access to both lists</text>
+
+<text x="60" y="750" class="eyebrow" style="fill:#b52576">API APPROVAL ORDER</text>
+<text x="60" y="789" class="body">Save approved contact</text>
+<path d="M305 781 H365" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="389" y="789" class="body">Confirm it is saved</text>
+<path d="M595 781 H655" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="677" y="789" class="body">Remove pending item</text>
+<path d="M913 781 H973" fill="none" stroke="#b52576" stroke-width="3" marker-end="url(#pinkArrow)"/>
+<text x="997" y="789" class="body">Refresh the saved-contact count</text>
+<line x1="60" y1="822" x2="1540" y2="822" stroke="#d5deed"/>
+<text x="60" y="852" class="body">VERIFIED TEST: 10 emails · 5 existing skipped · 5 suggestions staged · 0 duplicates on repeat</text>
+<text x="60" y="881" class="small">DEMO: JSON email input · Live Dynamics lookup · Approvals stay in SharePoint. Outlook ingestion and Dynamics writes are next.</text>
+</svg>
+
+</section>
+<section id="notes" hidden aria-labelledby="notes-title">
+<h1 id="notes-title">Your background explanation · 2½ minutes</h1>
+<p class="handoff"><strong>Handoff from your teammate:</strong> “You have seen the review and approval. Rutesh will explain how it works in the background.”</p>
+<h2>0:00–0:15 · Why this matters</h2>
+<p class="cue"><strong>Point to:</strong> Point to the title, then the two numbered sections.</p>
+<p>“You’ve seen the review experience. Behind it, our aim is to reduce manual contact checking while keeping a person in control. Two flows connect email discovery with a shared review and approval process.”</p>
+<h2>0:15–1:00 · Flow 1: discover missing contacts</h2>
+<p class="cue"><strong>Point to:</strong> Follow the top row from JSON to Flow 1, Dynamics, then Pending review.</p>
+<p>“Flow one starts with ten sample emails from our JSON file and processes them one at a time. It checks each sender’s email against the live Dynamics contact table. If that email already exists, we skip it and continue to the next message. For a missing contact, AI suggests the person’s name, and we check both our pending and approved lists for duplicates. Only a new suggestion enters ContactStaging, our pending review list. The reviewer can correct uncertain details. The value is less manual searching, fewer repeated entries, and a clear queue of contacts that need attention.”</p>
+<h2>1:00–1:50 · API and Flow 2: review and save</h2>
+<p class="cue"><strong>Point to:</strong> Follow the lower row: user → API → Flow 2 → lists. Then point to the pink approval sequence.</p>
+<p>“The user accesses the app with their company account. The backend API checks that sign-in and controls the approval steps. It calls flow two, Contact data, which reads and writes the SharePoint lists using the owner’s existing connection. Users do not need separate SharePoint access. When someone approves a contact, the API first saves the corrected details in AddedContacts, then checks that the record was saved successfully. Only after that does it remove the pending entry and refresh the count. If saving fails, the pending record remains for retry. This gives the team shared records and reduces the risk of losing a suggestion during approval.”</p>
+<h2>1:50–2:15 · What the test proves</h2>
+<p class="cue"><strong>Point to:</strong> Point to the test-result strip beneath the diagram.</p>
+<p>“In our ten-email test, five contacts already existed in Dynamics and were skipped. The other five became review suggestions. Running the same batch again created no duplicates. Those results demonstrate the basic value: focus the reviewer on missing contacts, keep AI suggestions subject to human review, and avoid adding the same person repeatedly.”</p>
+<h2>2:15–2:30 · Be clear about the demo boundary</h2>
+<p class="cue"><strong>Point to:</strong> Point to the bottom demo-scope note.</p>
+<p>“For this demo, the emails are simulated, the Dynamics lookup is live, and approved contacts stay in SharePoint. Connecting Outlook and importing approved contacts into Dynamics are the next steps.”</p>
+<p class="facts"><strong>Pace:</strong> 318 spoken words, about 2½ minutes at a calm presentation pace. Rehearse once and leave a short pause between the two flows.</p>
+<p class="facts"><strong>Before recording:</strong> Use the live connected app for shared-list approval. The local sample-data version uses browser storage; describe it as simulated if used. The five-and-five figures are test results, not the current queue size.</p>
+</section></main>
+<script>
+const notes=document.getElementById('notes'),toggle=document.getElementById('toggle');
+toggle.addEventListener('click',()=>{notes.hidden=!notes.hidden;toggle.setAttribute('aria-expanded',String(!notes.hidden));toggle.textContent=notes.hidden?'Show speaker notes':'Hide speaker notes';if(!notes.hidden)notes.scrollIntoView({behavior:'smooth',block:'start'});});
+document.getElementById('export-svg').addEventListener('click',()=>{const source=new XMLSerializer().serializeToString(document.querySelector('#diagram svg'));const url=URL.createObjectURL(new Blob([source],{type:'image/svg+xml'}));const a=document.createElement('a');a.href=url;a.download='background-overview.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+document.getElementById('full').addEventListener('click',async()=>{try{await document.getElementById('diagram').requestFullscreen();}catch{document.getElementById('diagram').scrollIntoView({block:'start'});}});
+</script></body></html>

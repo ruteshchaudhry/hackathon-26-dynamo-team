@@ -1,0 +1,27 @@
+CUSTOMER CAPTURE — 2½-MINUTE BACKGROUND WALKTHROUGH
+Aim for about 130 words per minute. Use the cues as a guide; they are not spoken.
+
+0:00–0:15 | Why this matters
+POINT TO: Point to the title, then the two numbered sections.
+SAY: You’ve seen the review experience. Behind it, our aim is to reduce manual contact checking while keeping a person in control. Two flows connect email discovery with a shared review and approval process.
+
+0:15–1:00 | Flow 1: discover missing contacts
+POINT TO: Follow the top row from JSON to Flow 1, Dynamics, then Pending review.
+SAY: Flow one starts with ten sample emails from our JSON file and processes them one at a time. It checks each sender’s email against the live Dynamics contact table. If that email already exists, we skip it and continue to the next message. For a missing contact, AI suggests the person’s name, and we check both our pending and approved lists for duplicates. Only a new suggestion enters ContactStaging, our pending review list. The reviewer can correct uncertain details. The value is less manual searching, fewer repeated entries, and a clear queue of contacts that need attention.
+
+1:00–1:50 | API and Flow 2: review and save
+POINT TO: Follow the lower row: user → API → Flow 2 → lists. Then point to the pink approval sequence.
+SAY: The user accesses the app with their company account. The backend API checks that sign-in and controls the approval steps. It calls flow two, Contact data, which reads and writes the SharePoint lists using the owner’s existing connection. Users do not need separate SharePoint access. When someone approves a contact, the API first saves the corrected details in AddedContacts, then checks that the record was saved successfully. Only after that does it remove the pending entry and refresh the count. If saving fails, the pending record remains for retry. This gives the team shared records and reduces the risk of losing a suggestion during approval.
+
+1:50–2:15 | What the test proves
+POINT TO: Point to the test-result strip beneath the diagram.
+SAY: In our ten-email test, five contacts already existed in Dynamics and were skipped. The other five became review suggestions. Running the same batch again created no duplicates. Those results demonstrate the basic value: focus the reviewer on missing contacts, keep AI suggestions subject to human review, and avoid adding the same person repeatedly.
+
+2:15–2:30 | Be clear about the demo boundary
+POINT TO: Point to the bottom demo-scope note.
+SAY: For this demo, the emails are simulated, the Dynamics lookup is live, and approved contacts stay in SharePoint. Connecting Outlook and importing approved contacts into Dynamics are the next steps.
+
+PRESENTER CHECK
+Use the live connected app when showing shared-list approval. The local sample-data version uses browser storage; label it a simulation if that is what your teammate records.
+The five-and-five figures describe the verified test batch, not the current queue size.
+Do not claim measured time savings, real inbox monitoring, or Dynamics contact creation.
