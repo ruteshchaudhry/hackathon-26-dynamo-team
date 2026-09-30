@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   Archive,
+  ArrowRight,
   Calendar,
   File,
   Flag,
@@ -16,7 +17,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { MAILBOX } from "@/lib/mock-data";
+import { MAILBOX, SYNC_INVITATION } from "@/lib/mock-data";
 import { markRead, useInbox } from "@/lib/integrations/graph";
 import { cn } from "@/lib/utils";
 
@@ -203,7 +204,25 @@ export function OutlookInbox() {
                   </div>
                 </div>
               </div>
-              <div className="whitespace-pre-line pt-4 leading-relaxed">{selected.body}</div>
+              {selected.id === SYNC_INVITATION.id ? (
+                <div className="pt-6">
+                  <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-outlook">
+                    <ScanSearch className="h-5 w-5" aria-hidden="true" /> Contact Capture
+                  </div>
+                  <h3 className="text-2xl font-semibold leading-tight">Keep your customer contacts up to date.</h3>
+                  <div className="whitespace-pre-line pt-5 leading-relaxed">{selected.body}</div>
+                  <Link
+                    to="/"
+                    className="my-6 inline-flex items-center justify-center gap-2 rounded bg-outlook px-5 py-3 font-semibold text-brand-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-outlook"
+                  >
+                    Review and sync contacts <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  </Link>
+                  <p className="text-sm leading-relaxed text-muted-foreground">Check and edit the suggestions before you sync. Nothing is added to Dynamics until you approve it.</p>
+                  <p className="mt-6 leading-relaxed">Thanks,<br />The Contact Capture team</p>
+                </div>
+              ) : (
+                <div className="whitespace-pre-line pt-4 leading-relaxed">{selected.body}</div>
+              )}
               <div className="mt-6 flex gap-2">
                 <button className="flex items-center gap-1.5 rounded border px-3 py-1.5 hover:bg-muted"><Reply className="h-4 w-4" /> Reply</button>
                 <button className="flex items-center gap-1.5 rounded border px-3 py-1.5 hover:bg-muted"><ReplyAll className="h-4 w-4" /> Reply all</button>
