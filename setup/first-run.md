@@ -9,11 +9,11 @@
 
 Email is required; other details can remain blank. You can choose **Save for later** without approving. Everyone in the demo shares the same queue.
 
-The prepared demo has **Jordan Taylor** awaiting review and **Alex Morgan** already approved. These are fictional examples.
+The prepared demo includes sample contacts awaiting review. Email content is simulated.
 
 ## Add a new suggestion
 
-The flow owner runs **Customer Capture - Scan sample emails**, then you choose **Refresh records**. Re-running the same sample should not add a duplicate. Use a new fictional email and message ID for a fresh demonstration; ask the flow owner to prepare it.
+The flow owner runs **Customer Capture - Scan sample emails**, then you choose **Refresh records**. The flow processes the 10 entries in [test-emails.json](test-emails.json). Existing contacts are skipped; missing contacts become review suggestions. Re-running the batch should not create duplicates. No email is sent.
 
 ## Explain this during the presentation
 

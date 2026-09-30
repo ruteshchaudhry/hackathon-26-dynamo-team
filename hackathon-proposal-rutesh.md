@@ -8,8 +8,8 @@ Property managers email people who may be missing from Dynamics. We want a simpl
 
 ## Agreed journey
 
-1. A flow reads a sample email and checks the sender's email against Dynamics.
-2. If the contact exists, it stops. If the contact is missing, AI suggests names and the flow creates a review item. Repeated emails are checked to avoid duplicates.
+1. A flow reads the 10 test emails one at a time and checks each sender's email against Dynamics.
+2. If the contact exists, it skips that email and continues the batch. If the contact is missing, AI suggests names and the flow creates a review item. Repeated emails are checked to avoid duplicates.
 3. The user signs in with their company account and opens **Pending review**.
 4. They check email, first name, last name, property and relationship. They can correct details or save for later.
 5. **Approve & add** saves the approved contact. The pending item is removed only after saving succeeds.

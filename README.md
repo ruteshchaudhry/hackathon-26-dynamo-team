@@ -15,7 +15,7 @@ Pending records are removed only after the approved contact is saved. If an acti
 
 ## What the demo uses
 
-The scan currently uses a **sample email**, checks **live Dynamics data**, and suggests names using AI. Approved contacts are saved in the demo lists. **No contacts or relationships are created in Dynamics.**
+The scan currently uses **[10 sample emails](setup/test-emails.json)**, checks **live Dynamics data**, and suggests names using AI. Approved contacts are saved in the demo lists. **No contacts or relationships are created in Dynamics.**
 
 The flow owner runs the sample scan; app users choose **Refresh records**. Real inbox scanning, daily summaries and a Scan now button are not connected yet.
 

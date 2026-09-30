@@ -61,7 +61,7 @@ The deployment helper publishes frontend and managed Node 22 API together to the
 - CandidateKey is normalised email and unique in both lists. SourceStagingId is unique in AddedContacts. Confirm the approved record before deletion; recover lost responses and cleanup retries without another addition.
 - A future site move requires updating server IDs, the flow's fixed site/list mapping, and the pagination site check in the adapter.
 
-Scanning uses a fixed synthetic email, live `contacts` lookup on `emailaddress1`, AI Builder entity extraction, and duplicate checks against both lists. No Dynamics business-data writes. First/last-name search and property ID resolution are not implemented. The intended test mailbox is `testpmdyno-mine@outlook.com`; inbox ingestion is not connected. Use Outlook.com for that address only after access and environment connector policy are verified.
+Scanning uses the 10 entries from `setup/test-emails.json`, live `contacts` lookup on `emailaddress1`, AI Builder entity extraction, and duplicate checks against both lists. No Dynamics business-data writes. First/last-name search and property ID resolution are not implemented. The intended test mailbox is `testpmdyno-mine@outlook.com`; inbox ingestion is not connected. Use Outlook.com for that address only after access and environment connector policy are verified.
 
 ## Local development
 
@@ -74,3 +74,16 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
 Open http://localhost:8000. Restore `mode: 'live'` before deployment. Local samples stay in that browser; localhost is not configured as a live sign-in redirect.
 
 References: [solution flow APIs](https://learn.microsoft.com/en-us/power-automate/manage-flows-with-code), [HTTP trigger authentication](https://learn.microsoft.com/en-us/power-automate/oauth-authentication), [managed Static Web Apps APIs](https://learn.microsoft.com/en-us/azure/static-web-apps/apis-functions).
+
+## Refresh the email test batch
+
+Edit `setup/test-emails.json`, then run:
+
+```sh
+python3 setup/configure-test-email-batch.py --apply
+python3 -m unittest discover -s setup/tests
+```
+
+This loads a snapshot into the existing scanner's **Test emails** step; the flow does not download GitHub files at runtime. Run **Test → Manually → Run flow**, then inspect **Test summary** for each message's result. **ExistingContact** skips AI/staging, **Staged** creates a suggestion, and **AlreadyQueuedOrApproved** skips a duplicate. The loop is sequential. An existing contact never terminates the whole batch. A failed lookup cannot be treated as absence. The single `sample-email.json` file remains an example only.
+
+The test loader preserves connections and other actions, checks the workflow identity and version before changing it, and refuses an unexpected action structure. Reference: [Microsoft Apply to each guidance](https://learn.microsoft.com/en-us/power-automate/apply-to-each).

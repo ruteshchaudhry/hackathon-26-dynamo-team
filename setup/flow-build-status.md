@@ -11,15 +11,22 @@
 - The approved contact and total remained after reloading the app.
 - A fresh fictional Jordan Taylor email passed the same live scan and created a new pending suggestion for the next demo.
 - Unsigned requests to read or approve records are rejected.
-- **34 automated checks pass**, covering sign-in, validation, duplicate protection, outdated edits, failed saves and cleanup retries.
+- **34 app checks and 3 batch-loader checks pass**, covering sign-in, validation, duplicate protection, outdated edits, failed saves and cleanup retries.
 
 The new **Customer Capture - Contact data** flow is active. This route does not depend on the previously outstanding Graph application consent.
+
+## JSON batch test
+
+The scanner now uses all 10 entries in [test-emails.json](test-emails.json), one at a time. The first batch processed all 10: **5 existing contacts skipped and 5 new review suggestions created**. The matching branch now has a live test: it skips only that email and continues the batch.
+
+The repeat run processed all 10: **5 existing contacts skipped, 5 already queued suggestions skipped, and 0 duplicates created**. The app displayed the five new suggestions alongside the earlier Jordan sample. Two AI name suggestions remained blank for manual review.
+
+The flow contains a loaded copy of the file. Updating GitHub alone does not change the flow; the owner must reload the fixture using the [batch setup command](technical-reference.md#refresh-the-email-test-batch).
 
 ## Still outside the demonstrated path
 
 - Real mailbox ingestion, scheduled scans, daily summaries and a Scan now button.
 - Name-based contact search and automatic property/relationship matching.
-- An existing Dynamics contact's match-and-stop branch is configured but still needs a live test.
 - A second company account without site access has not been tested. The app only requests its own API scope and uses the owner's connection for data.
 - Failure/retry and competing-reviewer scenarios have automated coverage; deliberate live service failures were not introduced.
 
