@@ -1,44 +1,35 @@
-# Customer Capture — hackathon POC
+# Customer Capture
 
-A simple contact-review app: Power Automate reads one Outlook inbox, checks live Dynamics data, and stores suggestions in SharePoint. An organisational user reviews and approves suggestions in a static web app. Approved records go to a second SharePoint List to simulate adding contacts. Dynamics remains read-only.
+Find missing contacts from email, review their details, and approve them into a shared demo contact list.
 
-**Current build stage:** Use a manually triggered flow with [synthetic email JSON](setup/sample-email.json) until test-inbox access is available. Live Dynamics lookup, AI Builder name extraction and SharePoint staging have passed the missing-contact and repeated-scan tests. See [flow build status](setup/flow-build-status.md) for verified results and remaining work. No external mock email service is required; the demo must label its email source as simulated.
+[Open the demo](https://kind-ground-0ee249903.5.azurestaticapps.net/) and sign in with your company account. You do not need access to the underlying SharePoint site. Everyone using the demo sees the same review queue.
 
-## Current scope and team ownership
+## Try it
 
-| Document | Owner / purpose |
+1. Open **Pending review** and choose **Review**.
+2. Correct the contact details. Email is required; other details are optional.
+3. Choose **Approve & add**.
+4. Open **Added contacts** to see the saved contact and updated total.
+
+Pending records are removed only after the approved contact is saved. If an action fails, refresh and retry.
+
+## What the demo uses
+
+The scan currently uses a **sample email**, checks **live Dynamics data**, and suggests names using AI. Approved contacts are saved in the demo lists. **No contacts or relationships are created in Dynamics.**
+
+The flow owner runs the sample scan; app users choose **Refresh records**. Real inbox scanning, daily summaries and a Scan now button are not connected yet.
+
+## Team guides
+
+| Guide | Who it helps |
 |---|---|
-| [Proposal](hackathon-proposal-rutesh.md) | Current agreed journey, scope, and demo checks |
-| [Static web app and integration](static-web-app-integration-workstream.md) | Rutesh: HTML, CSS, JavaScript, SSO, and integration |
-| [Power Automate](power-automate-workstream.md) | Flow teammate: inbox scan, live lookups, AI extraction and staging |
-| [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
-| [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
+| [Start here](setup/first-run.md) | Anyone presenting or testing |
+| [Proposal](hackathon-proposal-rutesh.md) | Product team and reviewers |
+| [App work](static-web-app-integration-workstream.md) | Rutesh / app owner |
+| [Automation work](power-automate-workstream.md) | Flow owner |
+| [Shared lists](sharepoint-workstream.md) | List owner |
+| [Dynamics checks](dataverse-workstream.md) | Dynamics owner |
+| [Latest test status](setup/flow-build-status.md) | Whole team |
+| [Technical reference](setup/technical-reference.md) | Engineers setting up or deploying |
 
-The source now uses an Entra-protected JavaScript backend for all SharePoint access. Users need app sign-in only, with no direct SharePoint permissions. Every signed-in tenant user can review the shared queue. The backend saves approved contacts, confirms the result, deletes staging and refreshes the count. No second flow is needed. Frontend and API are deployed. API sign-in and server settings are configured. The two new-site list grants are complete; Entra admin consent for the Graph application permission is still pending. See [access setup](setup/entra-access.md).
-
-## Hosted demo
-
-[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; Microsoft sign-in is enabled. Backend application admin consent is pending; both list grants are complete. See [deployment and redeployment notes](setup/azure-static-web-app.md).
-
-## Run the local demo
-
-```sh
-python3 -m http.server 8000 --bind 127.0.0.1 --directory frontend
-```
-
-For offline sample-data development, set `mode` to `demo` in frontend/config.js locally (do not deploy that change). Open http://localhost:8000 and choose **Open sample-data demo**. It uses fictional records stored only in that browser. Review, edit, approve, and rescan sample suggestions; approvals appear in Added contacts. No real mailbox or Dynamics records are changed.
-
-Run `npm ci --prefix api` and `npm test --prefix api` for API authentication, request validation and store checks.
-
-The app retains the deep blue, light blue and magenta palette, with a generic Customer Capture name and no organisation logos. Theme values live in `frontend/styles.css`. Configured tenant service URLs are retained for integration.
-
-## Get started
-
-```sh
-git clone https://github.com/ruteshchaudhry/hackathon-26-dynamo-team.git
-cd hackathon-26-dynamo-team
-```
-
-Open the repository in Codex. Read the proposal and your workstream before implementation. Start with synthetic sample emails and Dynamics development records.
-
-Shared design guidance remains in [AGENTS.md](AGENTS.md) and [TEAM-SKILLS.md](TEAM-SKILLS.md); preserve the complete `.agents/skills` folders.
+Shared design guidance: [AGENTS.md](AGENTS.md) and [TEAM-SKILLS.md](TEAM-SKILLS.md).

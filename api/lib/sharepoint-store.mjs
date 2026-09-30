@@ -1,4 +1,5 @@
-// Server-only app-identity Microsoft Graph operations. Never forward browser tokens here.
+// Server-only list operations. Never forward browser tokens to the data service.
+import { createFlowTransport } from './flow-transport.mjs';
 export function reviewedFields(input) {
   const fields = {};
   for (const key of ['Email', 'FirstName', 'LastName', 'TargetLabel', 'RelationshipLabel']) {
@@ -11,6 +12,7 @@ export function reviewedFields(input) {
   return fields;
 }
 export function createSharePointStore({ config, getToken, reviewerId, fetcher = fetch }) {
+  const flowRequest = config.storageMode === 'flow' ? createFlowTransport(config, fetcher) : null;
   const root = `https://graph.microsoft.com/v1.0/sites/${encodeURIComponent(config.siteId)}/lists/`;
   const bases = [config.stagingListId, config.addedListId].map(id => `${root}${encodeURIComponent(id)}/items`);
   const [staging, added] = bases;
@@ -18,6 +20,7 @@ export function createSharePointStore({ config, getToken, reviewerId, fetcher = 
     // Only configured list endpoints (including their pagination) can receive a token.
     const destination = new URL(url);
     if (destination.username || destination.password || !bases.some(base => destination.href === base || destination.href.startsWith(`${base}?`) || destination.href.startsWith(`${base}/`))) throw new Error('Unexpected SharePoint endpoint.');
+    if (flowRequest) return flowRequest(url, method, body, etag);
     const token = await getToken();
     const headers = { Authorization: `Bearer ${token}` };
     if (body) headers['Content-Type'] = 'application/json';

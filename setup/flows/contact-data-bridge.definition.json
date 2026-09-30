@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "$authentication": {
+      "defaultValue": {},
+      "type": "SecureObject"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "required": [
+            "list",
+            "operation",
+            "itemId",
+            "query",
+            "fields",
+            "eTag"
+          ],
+          "properties": {
+            "list": {
+              "type": "string",
+              "enum": [
+                "staging",
+                "added"
+              ]
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "list",
+                "get",
+                "create",
+                "update",
+                "delete"
+              ]
+            },
+            "itemId": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "query": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "fields": {
+              "type": "object"
+            },
+            "eTag": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        }
+      }
+    }
+  },
+  "actions": {
+    "Allowed_request": {
+      "type": "If",
+      "expression": "@and(contains(createArray('staging','added'),triggerBody()?['list']),contains(createArray('list','get','create','update','delete'),triggerBody()?['operation']),or(equals(triggerBody()?['query'],''),startsWith(triggerBody()?['query'],'?')),or(contains(createArray('list','create'),triggerBody()?['operation']),greater(triggerBody()?['itemId'],0)),or(not(contains(createArray('update','delete'),triggerBody()?['operation'])),and(not(empty(triggerBody()?['eTag'])),not(equals(triggerBody()?['eTag'],'*')))),or(not(equals(triggerBody()?['operation'],'create')),equals(triggerBody()?['list'],'added')),or(not(contains(createArray('update','delete'),triggerBody()?['operation'])),equals(triggerBody()?['list'],'staging')))",
+      "runAfter": {},
+      "actions": {
+        "List_request": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "HttpRequest"
+            },
+            "parameters": {
+              "dataset": "https://randrltd.sharepoint.com/sites/CustomerCaptureDemo",
+              "parameters/method": "@if(equals(triggerBody()?['operation'],'create'),'POST',if(equals(triggerBody()?['operation'],'update'),'PATCH',if(equals(triggerBody()?['operation'],'delete'),'DELETE','GET')))",
+              "parameters/uri": "@concat('_api/web/lists(guid''',if(equals(triggerBody()?['list'],'staging'),'f3785741-154d-47ba-978c-74251305d71f','356eae0e-5456-418c-ad49-1cc04f072ff6'),''')/items',if(contains(createArray('get','update','delete'),triggerBody()?['operation']),concat('(',string(triggerBody()?['itemId']),')'),''),triggerBody()?['query'])",
+              "parameters/headers": "@union(json('{\"Accept\":\"application/json;odata=minimalmetadata\",\"Content-Type\":\"application/json;odata=nometadata\"}'),if(contains(createArray('update','delete'),triggerBody()?['operation']),addProperty(json('{}'),'If-Match',triggerBody()?['eTag']),json('{}')))",
+              "parameters/body": "@if(contains(createArray('create','update'),triggerBody()?['operation']),string(triggerBody()?['fields']),null)"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "runAfter": {}
+        },
+        "Response": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "status": "@coalesce(outputs('List_request')?['statusCode'],502)",
+              "body": "@coalesce(outputs('List_request')?['body'],json('{}'))",
+              "headers": "@coalesce(outputs('List_request')?['headers'],json('{}'))"
+            }
+          },
+          "runAfter": {
+            "List_request": [
+              "Succeeded",
+              "Failed",
+              "TimedOut"
+            ]
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Invalid_request": {
+            "type": "Response",
+            "kind": "Http",
+            "inputs": {
+              "statusCode": 400,
+              "body": {
+                "error": "Unsupported contact data operation."
+              }
+            },
+            "runAfter": {}
+          }
+        }
+      }
+    }
+  }
+}

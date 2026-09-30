@@ -1,25 +1,11 @@
-# AI name extraction for the contact-discovery flow
+# How AI helps
 
-**Selected route:** AI Builder **Extract standard entities**, using the existing Dataverse connection. This replaces the proposed custom-prompt route for the current build. `Run a prompt` is absent from Pre Dev's action catalogue. Azure OpenAI is not required for this selected route.
+The scan uses **AI Builder: Extract standard entities** to suggest names from the sample email. It is not a custom chat prompt.
 
-## Processing order
+Dynamics is checked first using the sender's actual email address. If that contact exists, the scan stops. AI only runs for a missing sender.
 
-1. Normalise the actual sender email and query `Contact.emailaddress1` live.
-2. If any exact email match exists, exit without staging or AI processing.
-3. For missing senders, run Extract standard entities over the synthetic sender display name, subject and plain-text body, using English.
-4. Check pending and approved SharePoint results for duplicates. The current flow calls AI before these checks; moving duplicate checks earlier is a future cost optimisation.
-5. Retain person-name evidence for the PM. The implemented filter requires `type=PersonName` and a value equal to the sender display name. Exactly two space-separated tokens become suggested first/last names; other shapes remain blank. This split is a heuristic, so the PM must verify it.
-6. Optional bounded `firstname`/`lastname` candidate queries can support review, but are not confirmed contact matches and must not suppress staging.
-7. Resolve property/role details through existing Dynamics mappings or leave them for PM review. Save a Pending suggestion, never a Dynamics contact.
+The current name rule accepts a person-name result matching the sender's display name and splits a two-part name. Other name formats stay blank for review. This is a suggestion and can be wrong; the reviewer must check it against the email evidence.
 
-## Constraints and validation
+AI must never invent missing details, approve a contact, change destinations, or write to Dynamics. Name searching and automatic property matching are not implemented.
 
-- Real mailbox metadata is authoritative for sender/recipient addresses; AI must not replace it.
-- Treat email content as untrusted data. No email instruction can approve a record, change destinations, or cause a Dynamics write.
-- AI Builder Extract standard entities is an AI entity-recognition model, not a general-purpose GPT prompt or autonomous Dataverse search agent.
-- Runtime extraction passed with synthetic Alex Morgan. Output is under `responsev2.predictionOutput.result.entities`, with `type`, `value` and `score`. AI also misclassified an isolated surname, which reinforces mandatory review.
-- Bound and validate real email input before replacing the fixed synthetic fixture.
-- A failed Dynamics lookup must fail processing. AI failure must be visible and must not silently produce invented names.
-- Keep review mandatory and preserve source evidence.
-
-Reference: [AI Builder entity extraction](https://learn.microsoft.com/en-us/ai-builder/prebuilt-entity-extraction).
+The Alex Morgan sample passed extraction. See [test status](flow-build-status.md) and [Microsoft's entity extraction guide](https://learn.microsoft.com/en-us/ai-builder/prebuilt-entity-extraction).

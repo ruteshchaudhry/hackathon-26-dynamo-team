@@ -14,7 +14,7 @@ app.http('contacts', {
     if (!handler) {
       try {
         const config = readConfig();
-        handler = createHandler({ config, authenticate: createAuthenticator(config), getToken: createGraphTokenProvider(config) });
+        handler = createHandler({ config, authenticate: createAuthenticator(config), getToken: config.storageMode === 'graph' ? createGraphTokenProvider(config) : undefined });
       } catch {
         return { status: 503, headers: { 'Cache-Control': 'no-store' }, jsonBody: { error: 'Contact records are not ready yet. Please contact the app owner.' } };
       }

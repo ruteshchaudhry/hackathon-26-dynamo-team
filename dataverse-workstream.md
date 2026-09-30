@@ -1,50 +1,20 @@
-# Dynamics read-only workstream: Customer Capture POC
+# Dynamics work
 
-**Owner:** Dynamics teammate, to be assigned.
+Owner: Dynamics teammate.
 
-**Consumers:** Power Automate owner and Rutesh.
+Dynamics supplies a live answer to one question: **does a contact already have this sender's email address?**
 
-## Responsibility
+The scan checks the Contact table's **emailaddress1** field. Any exact match ends processing. If no match is found, the sender can become a review suggestion. A failed lookup must stop the scan.
 
-Provide live read access and mappings for the existing Dynamics development data. The existing filename is retained for team links; this workstream no longer creates a staging table or makes any Dynamics changes.
+## Team actions
 
-Power Automate queries Dynamics at scan time. Direct SharePoint approval in the static app does not query Dynamics again. Approved demo results are stored in SharePoint, never in Dynamics. A Dynamics query failure must stop processing with a visible error; it must not be interpreted as a missing contact.
+- Provide a safe existing test contact to verify the match-and-stop branch.
+- Confirm the flow connection can read the development environment.
+- Keep all Dynamics business data read-only. No new tables or schema changes are needed.
+- If the demo is extended, confirm real property/development/premises and relationship mappings first.
 
-## Actions
+AI name suggestions do not replace the email lookup. First/last-name candidate searching and automatic property matching are not implemented.
 
-- [x] Verify the development environment URL and connection through a successful contact read.
-- [x] Verify Contact entity set `contacts` and fields `contactid,firstname,lastname,emailaddress1` with a live read.
-- [ ] Map Contact Relationship, its contact reference, target references, and role values.
-- [ ] Map existing Property/Development and Premises IDs, names, explicit identifiers, and their relationships.
-- [ ] Explain whether a relationship requires multiple target references; do not replace the actual model with an assumed generic property ID.
-- [ ] Identify existing synthetic demo records covering a known contact, an existing relationship, and multiple properties. A new sender can be represented by a sample email without creating a Dynamics record.
-- [ ] Provide tested read-only lookup examples, including no match, one match, multiple matches, and API failure.
-- [ ] Coordinate connection access and entitlements with the flow owner. Do not commit secrets or tokens.
+Approvals currently go to the demo contact list. A later Dynamics import must recheck duplicates and validate mandatory fields and relationships before creating anything.
 
-## Matching contract
-
-**Confirmed by Rutesh:** match the sender email against `contact.emailaddress1` first. The initial live query uses entity set `contacts`, selects `contactid,firstname,lastname,emailaddress1`, and is limited to two rows. Sender email is trimmed/lowercased and apostrophes escaped in the OData value.
-
-- One or more exact email matches: exit the scan successfully with no staging or relationship addition.
-- Zero exact email matches: proceed to AI-assisted extraction, duplicate checks and pending review.
-- Lookup failure: fail visibly; never treat it as zero matches.
-
-AI Builder Extract standard entities supplies name evidence. Proposed `firstname`/`lastname` candidate queries are advisory, bounded and only needed for missing-email cases. Name-only matches must never count as a confirmed identity or suppress staging. Do not write model-generated OData directly into a query.
-
-Property, development, premises and role mapping is required before a later Dynamics import; optional description text in the demo is not a validated lookup. Existing-contact relationship discovery is outside the current scope.
-
-Verified development organisation from the successful contact lookup: `https://rendallandrittner-predev.crm11.dynamics.com`. No Dynamics business records were modified.
-
-## Handoff and validation
-
-Deliver the environment URL, logical names, entity sets, relevant field/lookup mappings, allowed role values, sample target IDs, and read-query examples. These must match the [SharePoint contract](sharepoint-workstream.md) and [Power Automate implementation](power-automate-workstream.md).
-
-- [ ] Verify live reads from the flow connection against the configured sample records.
-- [ ] Verify the flow never invokes a Dynamics create, update, or delete operation.
-- [ ] Verify no custom Dataverse tables or schema changes are required.
-
-Reference: [Query the Dataverse Web API](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/overview).
-
-## Later import from approved SharePoint contacts
-
-AddedContacts is the approved input for a future Dynamics integration. Recheck Contact.emailaddress1 immediately before creation, resolve mandatory names/fields and property/role lookups, then create only missing records. Add persistent import status, Dynamics contact/relationship IDs, failures and retries to the handoff design. Keep approved source records after import. This future work is not implemented or enabled by demo approval.
+Environment details are in the [technical reference](setup/technical-reference.md).
