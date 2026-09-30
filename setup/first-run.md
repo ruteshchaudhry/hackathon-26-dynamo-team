@@ -2,7 +2,7 @@
 
 ## What is ready
 
-The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app still uses the earlier delegated build. The source now has an app-only backend; complete [Entra API and SharePoint setup](entra-access.md), then deploy frontend and API together. End users need no SharePoint permissions. For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
+The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app now includes the app-only backend. API sign-in and server settings are configured; complete the remaining [application consent and list grants](entra-access.md) to enable contact records. End users need no SharePoint permissions. For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
 
 Run from the repository root:
 
@@ -64,7 +64,7 @@ Entity extraction supplies name evidence; it does not query Dynamics or prove id
 
 ## 5. Activate and test backend SharePoint approval
 
-Complete the API scope, application consent, credential and two list grants in [access setup](entra-access.md). Deploy the frontend and API together. Sign into the hosted app with a tenant account that has no direct SharePoint list access and load the staged synthetic contact.
+API scope, server settings and deployment are complete. Finish application consent and the two list grants in [access setup](entra-access.md). Sign into the hosted app with a tenant account that has no direct SharePoint list access and load the staged synthetic contact.
 
 Correct its details and choose Approve & add. Confirm one AddedContacts record with the corrected values, removal from ContactStaging, and an increased Approved contacts created count after refresh/reload. Force a failed save and a cleanup failure in a controlled test to prove retry behavior. No second flow is needed and no Dynamics records are written.
 

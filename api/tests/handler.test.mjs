@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHandler } from '../lib/handler.mjs';
 const req = (action = '', body, headers = {}) => ({
   params: { action }, method: body ? 'POST' : 'GET',
-  headers: new Headers({ authorization: 'Bearer api-token', 'content-type': 'application/json', ...headers }),
+  headers: new Headers({ 'x-capture-authorization': 'Bearer api-token', 'content-type': 'application/json', ...headers }),
   text: async () => typeof body === 'string' ? body : JSON.stringify(body),
 });
 const expected = { id: '1', eTag: '"version-1"' };
@@ -43,4 +43,12 @@ test('backend list denial never asks end users for SharePoint permission or expo
     storeFactory: () => ({ read: async () => { throw new Error('network error secret=do-not-leak'); } }),
   });
   const result = await handler(req()); assert.equal(result.status, 502); assert.ok(!JSON.stringify(result).includes('do-not-leak'));
+});
+test('uses the app token header and never the hosting gateway Authorization token', async () => {
+  let supplied;
+  const handler = createHandler({ authenticate: async token => { supplied = token; throw new Error('Sign in'); } });
+  await handler(req('', undefined, { authorization: 'Bearer platform-token' }));
+  assert.equal(supplied, 'Bearer api-token');
+  await handler(req('', undefined, { authorization: 'Bearer platform-token', 'x-capture-authorization': '' }));
+  assert.equal(supplied, '');
 });

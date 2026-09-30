@@ -15,7 +15,7 @@ export function createApiStore({ getToken, fetcher = fetch }) {
   async function request(path, method = 'GET', body) {
     const response = await fetcher(`/api/contacts${path}`, {
       method, redirect: 'error', cache: 'no-store',
-      headers: { Authorization: `Bearer ${await getToken()}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      headers: { 'X-Capture-Authorization': `Bearer ${await getToken()}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
       body: body ? JSON.stringify(body) : undefined,
     });
     const data = await response.json().catch(() => null);

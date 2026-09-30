@@ -4,13 +4,13 @@
 
 Every user who can sign in to the single-tenant Customer Capture app can view, edit and approve the shared demo queue. **End users do not need SharePoint site or list permissions.** There are no reviewer roles, invitations or per-user SharePoint checks.
 
-The browser obtains an access token for our API. The API validates its signature, issuer, tenant, audience, expiry, caller and `access_as_user` scope. It then uses a server-held application credential to obtain a separate Graph application token. The browser never receives that credential or Graph token. ApprovedBy comes from the verified user's object ID, not the request body.
+The browser obtains an access token for our API and sends it as `X-Capture-Authorization: Bearer <token>` because Static Web Apps rewrites the standard Authorization header on the managed-Functions hop. The API validates its signature, issuer, tenant, audience, expiry, caller and `access_as_user` scope. It then uses a server-held application credential to obtain a separate Graph application token. The browser never receives that credential or Graph token. ApprovedBy comes from the verified user's object ID, not the request body.
 
 The UI uses contact-review language, without naming storage or implementation technologies. Sign-in first reuses a cached account or attempts silent Microsoft SSO. If required, it redirects once to Microsoft without forcing account selection. Consent, MFA or multiple browser accounts can still require interaction. Explicit sign-out suppresses automatic sign-in in that tab.
 
 ## Current state
 
-The API and frontend changes are implemented in source and tested using signed test tokens and simulated Graph responses. **Deployment of this new version is in progress.** The hosted deployment result and verification will be recorded below. Earlier Microsoft sign-in succeeded, but its delegated list reads were denied.
+The API and frontend changes are implemented in source and tested using signed test tokens and simulated Graph responses. **Frontend and managed API were deployed on 30 September 2026.** The live API returns 401 for unauthenticated reads and approvals. The new UI wording and sign-in module are live. End-to-end shared-data approval remains blocked by application consent and list grants. The hosted sign-in test reached Microsoft Authenticator MFA; the user was away, so completion and silent session reuse in this browser are not yet verified.
 
 The existing site can stay if an authorised owner/admin grants the application access. Alternatively, the user will provide a new owned site. No lists or records have been moved. API access_as_user scope, v2 tokens and SPA preauthorisation are applied. The selected-list Graph application permission is requested in the registration, but its admin-consent request returned HTTP 403. Backend identifiers and a seven-day credential are stored in Azure server settings. The credential expires **7 October 2026 at 03:11 UTC**; its value was never printed or saved to disk. Application consent and the two list grants remain pending.
 

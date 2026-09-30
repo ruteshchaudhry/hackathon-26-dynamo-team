@@ -9,7 +9,7 @@ test('browser calls only fixed same-origin API operations with an app token', as
   } });
   await store.read(); await store.save(expected, { Email: 'alex@example.com' }); await store.approve(expected);
   assert.deepEqual(calls.map(c => c.url), ['/api/contacts', '/api/contacts/save', '/api/contacts/approve']);
-  for (const { options } of calls) { assert.equal(options.headers.Authorization, 'Bearer api-token'); assert.equal(options.redirect, 'error'); }
+  for (const { options } of calls) { assert.equal(options.headers['X-Capture-Authorization'], 'Bearer api-token'); assert.equal(options.redirect, 'error'); }
   assert.deepEqual(JSON.parse(calls[2].options.body), { expected: { id: '1', eTag: '"1"' } });
 });
 test('frontend and server agree on reviewed contact normalization', () => {

@@ -27,7 +27,7 @@ The app's labels, notices and errors use plain contact-review language. Do not e
 | api/lib/graph-token.mjs | Server credential exchange, cached Graph application token |
 | api/lib/sharepoint-store.mjs | Graph list operations, version checks, duplicate protection and durable save-before-delete |
 
-The three operations are `GET /api/contacts`, `POST /api/contacts/save` with `{expected:{id,eTag},fields}`, and `POST /api/contacts/approve` with `{expected:{id,eTag}}`. Requests require an Entra API bearer token. IDs/credentials come from server settings; callers cannot select arbitrary lists or set approval metadata. Correction accepts only email, names and property/relationship labels. The server rereads authoritative records before approval.
+The three operations are `GET /api/contacts`, `POST /api/contacts/save` with `{expected:{id,eTag},fields}`, and `POST /api/contacts/approve` with `{expected:{id,eTag}}`. Requests require an Entra API bearer token in `X-Capture-Authorization`; the standard Authorization header is rewritten by the hosting gateway and is not used for user identity. IDs/credentials come from server settings; callers cannot select arbitrary lists or set approval metadata. Correction accepts only email, names and property/relationship labels. The server rereads authoritative records before approval.
 
 Changing descriptions clears stale Dynamics IDs. Unique CandidateKey in both lists and SourceStagingId in AddedContacts remain essential for concurrent requests. Processing items cannot be edited. Conflicting approvals retain records for investigation. ApprovedBy is a verified Entra object ID; site owners/automation can still edit the lists, so this is not an immutable audit system.
 
@@ -35,7 +35,7 @@ No approval flow or approval-time Dynamics query is added. Scanning remains a ma
 
 ## Setup, testing and status
 
-See [Entra/backend access](setup/entra-access.md), [server settings](setup/backend-settings.example.json) and [deployment](setup/azure-static-web-app.md). The API is implemented in source; the hosted site still runs the earlier delegated version until the API scope, application consent, server credential and list grants are configured. No live approval has been claimed.
+See [Entra/backend access](setup/entra-access.md), [server settings](setup/backend-settings.example.json) and [deployment](setup/azure-static-web-app.md). The frontend and API are deployed. API scope and server settings are configured. Anonymous read and approval calls return 401. Application consent and list grants remain pending; no live approval has been claimed.
 
 ```sh
 npm ci --prefix api
@@ -48,7 +48,8 @@ Offline sample mode remains available by setting frontend/config.js mode to demo
 
 ## Remaining acceptance
 
-- [ ] Configure API scope and server app credentials/permissions, then deploy both parts.
+- [x] Configure API scope and server credential, and deploy frontend/API.
+- [ ] Obtain Graph application admin consent and the two SharePoint list grants.
 - [ ] Sign in as a tenant user without SharePoint access and verify the complete review journey.
 - [ ] Verify two browsers share approved contacts and the persisted count.
 - [ ] Verify repeated original emails do not recreate staging after an email correction.

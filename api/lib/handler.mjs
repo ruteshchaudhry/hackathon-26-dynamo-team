@@ -3,8 +3,10 @@ import { createSharePointStore, reviewedFields } from './sharepoint-store.mjs';
 const reply = (status, jsonBody) => ({ status, jsonBody, headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/json', ...(status === 401 ? { 'WWW-Authenticate': 'Bearer' } : {}) } });
 export function createHandler({ authenticate, config, getToken, fetcher = fetch, storeFactory = createSharePointStore }) {
   return async request => {
+    // Static Web Apps replaces Authorization on its hop to managed Functions.
+    // Carry the original app token in a dedicated header and still verify every claim.
     let identity;
-    try { identity = await authenticate(request.headers.get('authorization')); }
+    try { identity = await authenticate(request.headers.get('x-capture-authorization')); }
     catch (error) { return reply(401, { error: error.message }); }
     const action = request.params?.action || '';
     const read = request.method === 'GET' && action === '';
