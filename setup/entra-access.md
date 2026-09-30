@@ -10,9 +10,11 @@ The UI uses contact-review language, without naming storage or implementation te
 
 ## Current state
 
-The API and frontend changes are implemented in source and tested using signed test tokens and simulated Graph responses. **Frontend and managed API were deployed on 30 September 2026.** The live API returns 401 for unauthenticated reads and approvals. The new UI wording and sign-in module are live. End-to-end shared-data approval remains blocked by application consent and list grants. The hosted sign-in test reached Microsoft Authenticator MFA; the user was away, so completion and silent session reuse in this browser are not yet verified.
+The API and frontend changes are implemented in source and tested using signed test tokens and simulated Graph responses. **Frontend and managed API were deployed on 30 September 2026.** The live API returns 401 for unauthenticated reads and approvals. The new UI wording and sign-in module are live. End-to-end shared-data approval remains blocked by application admin consent. The hosted sign-in test reached Microsoft Authenticator MFA; the user was away, so completion and silent session reuse in this browser are not yet verified.
 
-The existing site can stay if an authorised owner/admin grants the application access. Alternatively, the user will provide a new owned site. No lists or records have been moved. API access_as_user scope, v2 tokens and SPA preauthorisation are applied. The selected-list Graph application permission is requested in the registration, but its admin-consent request returned HTTP 403. Backend identifiers and a seven-day credential are stored in Azure server settings. The credential expires **7 October 2026 at 03:11 UTC**; its value was never printed or saved to disk. Application consent and the two list grants remain pending.
+The lists were copied to [Customer Capture Demo](https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/) on 30 September 2026. Their internal field names, defaults and unique keys are preserved. The deployed Azure backend settings now use the new site/list IDs below, verified by reading the settings back. The existing credential was retained. Both scan lookups and the staging-create action have been retargeted; the sample scan created one Pending Alex Morgan record on the new site. Original lists and records remain untouched.
+
+API access_as_user scope, v2 tokens and SPA preauthorisation are applied. The selected-list Graph application permission is requested in the registration, but administrator consent is still absent (checked 30 September). The earlier attempt to grant it returned HTTP 403. An Entra administrator must grant **Microsoft Graph → Application → Lists.SelectedOperations.Selected** for Customer Capture. Site ownership does not supply this consent. The server credential expires **7 October 2026 at 03:11 UTC**; its value was never printed or saved to disk. Both new-site application list grants were created successfully (HTTP 201) and read back on 30 September. Both lists retain Owners, Visitors, Members and Rutesh permissions. A direct backend client-credentials read still returns HTTP 401 on each list because application admin consent is missing.
 
 | Setting | Value |
 |---|---|
@@ -24,8 +26,8 @@ The existing site can stay if an authorised owner/admin grants the application a
 | API scope to expose | `api://1da20b9d-2397-4a82-bfc8-9c3549f30cd3/access_as_user` |
 | Graph permission to configure | **Application** `Lists.SelectedOperations.Selected` |
 | Graph application-role ID | `23c5a9bd-d900-4ecf-be26-a0689755d9e5` |
-| ContactStaging | `d2285f11-09dc-462b-b692-e3111a40c23f` |
-| AddedContacts | `85fc11a7-c916-4af3-b25e-1b7346aba98a` |
+| ContactStaging | `f3785741-154d-47ba-978c-74251305d71f` |
+| AddedContacts | `356eae0e-5456-418c-ad49-1cc04f072ff6` |
 
 The repeatable setup helper is `python3 setup/configure-backend.py --apply`. It preserves existing settings/credentials and applies no SharePoint list grants. Run it only when configuring this demo; an admin can complete the pending consent in Entra.
 
@@ -37,6 +39,12 @@ In **Expose an API**, set the application ID URI to `api://1da20b9d-2397-4a82-bf
 
 This is a scope for **our API**, not a user-delegated SharePoint permission. The frontend requests only this API scope; the earlier delegated Graph permission is no longer needed by the new source. Retire it after the new deployment is verified; do not revoke unrelated setup-client consents.
 
+## Administrator action still needed
+
+In Microsoft Entra admin center, open **App registrations → Customer Capture** (client ID `1da20b9d-2397-4a82-bfc8-9c3549f30cd3`) → **API permissions**. Confirm the Microsoft Graph permission `Lists.SelectedOperations.Selected` has **Type: Application**, then choose **Grant admin consent** using an authorised Entra administrator account. The existing delegated permission is a different grant and cannot authorise the app-only backend. Do not add broad Sites.ReadWrite.All to Customer Capture.
+
+After consent, repeat the app-only list read and hosted approval tests. The new site is already configured and both list grants are verified, so those steps need not be repeated.
+
 ## 2. Configure backend application access
 
 Add Microsoft Graph → **Application permissions** → `Lists.SelectedOperations.Selected`, then obtain tenant admin consent. Delegated consent from the earlier build does not satisfy this requirement.
@@ -45,22 +53,22 @@ Create an expiring application credential for this registration and place its va
 
 Configure the remaining settings from [backend-settings.example.json](backend-settings.example.json) in the same server settings. That file intentionally contains only public identifiers; the credential must be added separately. The code reads all site/list IDs from these settings, so a future site move does not require changing frontend code.
 
-## 3. Grant the application access to only the two lists
+## 3. Grant the application access to only the two lists (completed)
 
 An authorised site owner/admin must use a Graph setup client with sufficient permission-management rights. Microsoft's Selected permissions guidance lists `Sites.FullControl.All` or suitable selected owner/full-control access for list grants; this is the **setup client's** permission, not Customer Capture's runtime permission. Ownership alone does not grant Entra admin consent.
 
 For each list, first GET its permissions collection and check for an existing Customer Capture write grant; preserve existing users/groups. POST the body in [sharepoint-app-grant.json](sharepoint-app-grant.json) to:
 
 ```text
-https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/d2285f11-09dc-462b-b692-e3111a40c23f/permissions
-https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,894b0995-6a6a-4cf4-bad4-8019c7e75632,04153bf3-0839-4c40-b6ef-486829aa6e4b/lists/85fc11a7-c916-4af3-b25e-1b7346aba98a/permissions
+https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,8c9ebb5e-d984-4579-8836-08759bf23496,cbbbc411-10d3-440d-968a-a157504fca73/lists/f3785741-154d-47ba-978c-74251305d71f/permissions
+https://graph.microsoft.com/v1.0/sites/randrltd.sharepoint.com,8c9ebb5e-d984-4579-8836-08759bf23496,cbbbc411-10d3-440d-968a-a157504fca73/lists/356eae0e-5456-418c-ad49-1cc04f072ff6/permissions
 ```
 
 A prepared [batch](sharepoint-app-grants-batch.json) is also available. Confirm each inner response succeeds and GET the permissions again. An outer batch 200 is not proof of successful grants. Selected-list grants break inheritance; retain existing groups/users. No broad site-wide runtime grant is needed.
 
-The original site's advanced permissions page denied the current account permission-management access. On 29 September the two grant requests returned 403; the last batch request ID was `0d228fb0-4c80-4d7b-9160-f75b5753029e`. No application list grant has been confirmed. The account could access content but not manage site permissions. No access request was sent and no existing permission entry was removed.
+The original site's advanced permissions page denied the current account permission-management access. On 29 September the two grant requests returned 403; the last batch request ID was `0d228fb0-4c80-4d7b-9160-f75b5753029e`. No application grant was applied to the original site. The account could access content but not manage site permissions. No access request was sent and no existing permission entry was removed.
 
-If using a new site, create both lists with the verified schema, preserve unique keys, update the backend settings and both SharePoint reads plus the create action in the scan flow. Update prepared grant request URLs to the new IDs. Leave original records untouched until migration is verified.
+The new-site migration above is complete for schema, server configuration and scan destinations. The permissions read on both new lists confirms Rutesh is an owner and preserves the Owners, Members and Visitors groups. Customer Capture now has a verified write grant on each new list, alongside the four original permission entries. Prepared grant URLs and the batch target only the new lists.
 
 ## 4. Deploy and verify
 
@@ -72,6 +80,6 @@ Follow [deployment notes](azure-static-web-app.md) to publish frontend and API t
 - Retry after a failed save/cleanup does not create a duplicate.
 - Existing Microsoft browser sign-in is reused where possible; sign-out does not immediately sign the user back in.
 
-Power Automate keeps its own connection and permissions. Dynamics stays read-only. Live approval and browser SSO behavior on this new API architecture remain unverified until setup/deployment.
+Power Automate keeps its own connection and permissions. Dynamics stays read-only. Live approval and browser SSO behavior on this API architecture remain unverified until application admin consent is complete and the hosted tests pass.
 
 References: [Selected permissions](https://learn.microsoft.com/en-us/graph/permissions-selected-overview), [API claim validation](https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation), [Static Web Apps managed API capabilities](https://learn.microsoft.com/en-us/azure/static-web-apps/apis-functions).

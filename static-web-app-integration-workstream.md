@@ -35,7 +35,7 @@ No approval flow or approval-time Dynamics query is added. Scanning remains a ma
 
 ## Setup, testing and status
 
-See [Entra/backend access](setup/entra-access.md), [server settings](setup/backend-settings.example.json) and [deployment](setup/azure-static-web-app.md). The frontend and API are deployed. API scope and server settings are configured. Anonymous read and approval calls return 401. Application consent and list grants remain pending; no live approval has been claimed.
+See [Entra/backend access](setup/entra-access.md), [server settings](setup/backend-settings.example.json) and [deployment](setup/azure-static-web-app.md). The frontend and API are deployed. API scope and server settings are configured. Anonymous read and approval calls return 401. Application admin consent remains pending; the two list grants are complete; no live approval has been claimed.
 
 ```sh
 npm ci --prefix api
@@ -49,7 +49,8 @@ Offline sample mode remains available by setting frontend/config.js mode to demo
 ## Remaining acceptance
 
 - [x] Configure API scope and server credential, and deploy frontend/API.
-- [ ] Obtain Graph application admin consent and the two SharePoint list grants.
+- [x] Apply and verify the two SharePoint list grants.
+- [ ] Obtain Graph application admin consent.
 - [ ] Sign in as a tenant user without SharePoint access and verify the complete review journey.
 - [ ] Verify two browsers share approved contacts and the persisted count.
 - [ ] Verify repeated original emails do not recreate staging after an email correction.

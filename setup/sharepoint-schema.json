@@ -1,11 +1,11 @@
 {
-  "verifiedOn": "2026-09-29",
-  "siteUrl": "https://randrltd.sharepoint.com/sites/PRJ_Nabo/",
-  "siteDisplayName": "PRJ_Dynamo Shared",
-  "verification": "Column names and types read from SharePoint List Settings; constraints configured and inspected in UI. No live flow/API record tests yet.",
+  "verifiedOn": "2026-09-30",
+  "siteUrl": "https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/",
+  "siteDisplayName": "Customer Capture Demo",
+  "verification": "Copied to Customer Capture Demo using Existing list. Graph column metadata confirms original internal names, required unique CandidateKey on both lists, required unique SourceStagingId on AddedContacts, and Pending staging default. Runtime scan/approval verification is tracked in flow-build-status.md and entra-access.md.",
   "lists": {
     "ContactStaging": {
-      "id": "d2285f11-09dc-462b-b692-e3111a40c23f",
+      "id": "f3785741-154d-47ba-978c-74251305d71f",
       "fields": [
         {
           "displayName": "Title",
@@ -171,7 +171,7 @@
       }
     },
     "AddedContacts": {
-      "id": "85fc11a7-c916-4af3-b25e-1b7346aba98a",
+      "id": "356eae0e-5456-418c-ad49-1cc04f072ff6",
       "fields": [
         {
           "displayName": "Title",
@@ -371,6 +371,6 @@
     "Use ISO 8601 UTC inputs for ReceivedAt and ApprovedAt; both include time.",
     "Single-line text is limited to 255 characters. Validate keys and identifiers; do not silently truncate them.",
     "AddedContacts display labels were corrected; original internal names TargetID, DevelpmentId and PremiseId remain.",
-    "Pilot permissions, Graph site ID, consent, live authentication and flow connections remain to be configured and tested."
+    "New Graph site/list IDs configured in Azure. Both selected-list application write grants verified on 30 September. Scan and repeat-scan succeeded on the new site. Entra application admin consent and live app approval remain outstanding."
   ]
 }

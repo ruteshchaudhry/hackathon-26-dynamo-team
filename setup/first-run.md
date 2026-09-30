@@ -2,7 +2,7 @@
 
 ## What is ready
 
-The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app now includes the app-only backend. API sign-in and server settings are configured; complete the remaining [application consent and list grants](entra-access.md) to enable contact records. End users need no SharePoint permissions. For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
+The repository includes a working local sample-data review app. It can edit, approve, search, rescan fixtures, and show added contacts. The hosted app now includes the app-only backend. API sign-in and server settings are configured; complete the remaining [application admin consent](entra-access.md) to enable contact records. End users need no SharePoint permissions. For a local sample-data session only, change mode to demo locally; localhost is not an authorised live sign-in redirect.
 
 Run from the repository root:
 
@@ -23,7 +23,7 @@ npm test --prefix api
 |---|---|
 | Power Platform environment | `ae00c6cc-145f-41ea-bf30-1f0979a559c6` |
 | Solutions page | https://make.powerapps.com/environments/ae00c6cc-145f-41ea-bf30-1f0979a559c6/solutions |
-| SharePoint site | https://randrltd.sharepoint.com/sites/PRJ_Nabo/ |
+| SharePoint site | https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/ |
 | Test mailbox | `testpmdyno-mine@outlook.com` |
 
 Use the organisational work identity for Power Platform, Dynamics, and SharePoint. Use the test mailbox's personal Microsoft account for its Outlook.com connection. These are separate connections. Enter passwords only in Microsoft's sign-in screens; do not put them in configuration files.
@@ -32,14 +32,14 @@ The test address uses the **Outlook.com** connector, whose read action is **Get 
 
 ## 2. SharePoint Lists: schema configured
 
-The existing lists were reused and missing columns added on 29 September 2026:
+The configured lists were copied to Customer Capture Demo on 30 September 2026; their schema and unique keys were checked through Graph:
 
 - `ContactStaging`
 - `AddedContacts`
 
 Use the verified [schema inventory](sharepoint-schema.json) and [SharePoint workstream](../sharepoint-workstream.md). List IDs and the resolved Graph site ID are server settings; see [backend configuration](backend-settings.example.json). AddedContacts retains three legacy internal names: TargetID, DevelpmentId, and PremiseId. Map these explicitly. Populate Title with a concise contact/property label in create actions.
 
-CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Backend application permissions still need configuration/testing with the site owner; no user list grants are required. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
+CandidateKey uniqueness is configured in both lists, and SourceStagingId uniqueness in AddedContacts. Verify actual duplicate rejection with synthetic flow inputs. Backend application consent still needs an Entra administrator; list grants are already applied; no user list grants are required. Do not place browser fixture IDs such as `demo-property-1` into live Dynamics lookup fields.
 
 ## 3. Manual scan flow: first path verified
 
@@ -64,7 +64,7 @@ Entity extraction supplies name evidence; it does not query Dynamics or prove id
 
 ## 5. Activate and test backend SharePoint approval
 
-API scope, server settings and deployment are complete. Finish application consent and the two list grants in [access setup](entra-access.md). Sign into the hosted app with a tenant account that has no direct SharePoint list access and load the staged synthetic contact.
+API scope, server settings and deployment are complete. Finish Entra application admin consent; both list grants are applied. See the remaining step in [access setup](entra-access.md). Sign into the hosted app with a tenant account that has no direct SharePoint list access and load the staged synthetic contact.
 
 Correct its details and choose Approve & add. Confirm one AddedContacts record with the corrected values, removal from ContactStaging, and an increased Approved contacts created count after refresh/reload. Force a failed save and a cleanup failure in a controlled test to prove retry behavior. No second flow is needed and no Dynamics records are written.
 

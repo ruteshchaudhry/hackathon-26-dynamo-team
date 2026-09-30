@@ -4,14 +4,14 @@
 
 **Consumers:** Power Automate owner and Rutesh.
 
-**Status (29 September 2026):** Both existing lists reused and their missing columns added. Names/types and unique-key settings verified in SharePoint; the live scan created one synthetic Pending Alex Morgan item and a repeat scan skipped creation. Backend activation and its application grants remain pending. End users will not need SharePoint permissions.
+**Status (30 September 2026):** Both lists copied to Customer Capture Demo. Graph metadata confirms the copied internal names, defaults and unique keys. The retargeted live scan created one synthetic Pending Alex Morgan record. Azure backend IDs now point to the new lists. Application admin consent remains pending; the two list grants are complete; end users need no SharePoint permissions. The original site/lists remain untouched.
 
 ## Configured lists
 
-Use **ContactStaging** and **AddedContacts** in https://randrltd.sharepoint.com/sites/PRJ_Nabo/ (site display name: PRJ_Dynamo Shared). These are SharePoint Lists, not Excel files in a document library. The verified IDs and complete internal-name/type inventory are in [sharepoint-schema.json](setup/sharepoint-schema.json).
+Use **ContactStaging** and **AddedContacts** in https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/ (site display name: Customer Capture Demo). These are SharePoint Lists, not Excel files in a document library. The verified IDs and complete internal-name/type inventory are in [sharepoint-schema.json](setup/sharepoint-schema.json).
 
-- [ContactStaging](https://randrltd.sharepoint.com/sites/PRJ_Nabo/Lists/ContactStaging/AllItems.aspx): `d2285f11-09dc-462b-b692-e3111a40c23f`.
-- [AddedContacts](https://randrltd.sharepoint.com/sites/PRJ_Nabo/Lists/AddedContacts/AllItems.aspx): `85fc11a7-c916-4af3-b25e-1b7346aba98a`.
+- [ContactStaging](https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/Lists/ContactStaging/AllItems.aspx): `f3785741-154d-47ba-978c-74251305d71f`.
+- [AddedContacts](https://randrltd.sharepoint.com/sites/CustomerCaptureDemo/Lists/AddedContacts/AllItems.aspx): `356eae0e-5456-418c-ad49-1cc04f072ff6`.
 
 ### Integration details verified during setup
 
@@ -27,7 +27,7 @@ CandidateKey is required and unique in both lists. SourceStagingId is required a
 
 RecipientAddresses and EvidenceExcerpt are plain multiline text; store recipients as a JSON array of strings. ReceivedAt and ApprovedAt include time; send ISO 8601 UTC values. Other text fields, including the existing ErrorMessage, are single-line text (255 characters). Keep errors concise. Validate key and identifier lengths; never silently truncate identity keys. Agree a deterministic compact key encoding before implementing the flows if the full business/source key exceeds 255 characters.
 
-List configuration and sequential duplicate scan checks are verified. Concurrent unique-key rejection, backend live reads, and live approval retries remain untested. Existing site permissions were not changed. The proposed list-specific application grants remain pending; see [access plan](setup/entra-access.md).
+List configuration and sequential duplicate scan checks are verified. Concurrent unique-key rejection and live approval retries remain untested. Backend app-only read checks currently return HTTP 401 while application admin consent is absent. Existing user/group permissions were preserved; the two lists now have selected application write grants. The list-specific application grants are applied and verified; see [access plan](setup/entra-access.md).
 
 | List | Purpose |
 |---|---|
@@ -81,8 +81,8 @@ Enforce unique final CandidateKey values in AddedContacts and a unique SourceSta
 
 ## Access and integration
 
-- [ ] Grant the automation connection the list read/write permissions needed for processing.
-- [ ] Grant the backend application write access to only ContactStaging and AddedContacts. Users do not need direct SharePoint permissions.
+- [x] Grant the automation connection the list read/write permissions needed for processing (scan tested).
+- [x] Grant the backend application write access to only ContactStaging and AddedContacts. Users do not need direct SharePoint permissions.
 - [ ] Keep a shared demo queue: every user able to sign in to the single-tenant app can review all suggestions. No reviewer roles, invitations or item-level isolation.
 - [ ] Coordinate Microsoft Graph **application** Lists.SelectedOperations.Selected consent and the backend credential, kept in Azure server settings.
 - [ ] Supply example JSON records and the field/status mapping to Rutesh.

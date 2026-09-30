@@ -14,11 +14,11 @@ A simple contact-review app: Power Automate reads one Outlook inbox, checks live
 | [SharePoint storage](sharepoint-workstream.md) | Storage teammate: ContactStaging and AddedContacts lists, permissions, and field mapping |
 | [Dynamics read-only integration](dataverse-workstream.md) | Dynamics teammate: existing API mappings and read access; no schema changes |
 
-The source now uses an Entra-protected JavaScript backend for all SharePoint access. Users need app sign-in only, with no direct SharePoint permissions. Every signed-in tenant user can review the shared queue. The backend saves approved contacts, confirms the result, deletes staging and refreshes the count. No second flow is needed. Frontend and API are deployed. API sign-in and server settings are configured; Entra admin consent for the Graph application permission and the two list grants are still pending. See [access setup](setup/entra-access.md).
+The source now uses an Entra-protected JavaScript backend for all SharePoint access. Users need app sign-in only, with no direct SharePoint permissions. Every signed-in tenant user can review the shared queue. The backend saves approved contacts, confirms the result, deletes staging and refreshes the count. No second flow is needed. Frontend and API are deployed. API sign-in and server settings are configured. The two new-site list grants are complete; Entra admin consent for the Graph application permission is still pending. See [access setup](setup/entra-access.md).
 
 ## Hosted demo
 
-[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; Microsoft sign-in is enabled; Backend application consent and list grants are pending. See [deployment and redeployment notes](setup/azure-static-web-app.md).
+[Open Customer Capture on Azure](https://kind-ground-0ee249903.5.azurestaticapps.net/). Hosted on the Free Static Web Apps plan; Microsoft sign-in is enabled. Backend application admin consent is pending; both list grants are complete. See [deployment and redeployment notes](setup/azure-static-web-app.md).
 
 ## Run the local demo
 
